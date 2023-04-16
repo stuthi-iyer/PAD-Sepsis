@@ -1,0 +1,2297 @@
+----------------------------------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  /Users/Stuthi/Documents/Stuthi/Year 2 Pitt MPH/Work-Related/CLI:Sepsis /Log Binomial Regressi
+> on.log
+  log type:  text
+ opened on:  16 Apr 2023, 13:22:29
+
+. 
+. use "/Users/Stuthi/Documents/Stuthi/Year 2 Pitt MPH/Work-Related/CLI:Sepsis /All Sepsis.dta", clear 
+
+. 
+. drop dispuniform i10_dx1-i10_dx40 i10_ndx i10_npr i10_pr1-i10_pr25 los prday1-prday25 key_nis pl_nchs to
+> tchg hosp_locteach pay1_1-pay1_7 pl_nchs1-pl_nchs7 hosp_locteach1-hosp_locteach4 bysup byinf endosup end
+> oinf fem majamp_1-majamp_25 minamp_1-minamp_25 majamptot minamptot extLOS dispuniform1-dispuniform9
+
+. 
+. svyset hosp_nis [pw=discwt]
+
+Sampling weights: discwt
+             VCE: linearized
+     Single unit: missing
+        Strata 1: <one>
+ Sampling unit 1: hosp_nis
+           FPC 1: <zero>
+
+. 
+. gen zipinc_qrtl_2 = 0
+
+. replace zipinc_qrtl_2 = zipinc_qrtl
+(391,055 real changes made)
+
+. replace zipinc_qrtl_2 = 1 if zipinc_qrtl_2 == 2
+(103,578 real changes made)
+
+. replace zipinc_qrtl_2 = 2 if zipinc_qrtl_2 == 3 | zipinc_qrtl_2 == 4
+(162,166 real changes made)
+
+. 
+. *For CIs
+. gen zipinc_qrtl_0_50 =0
+
+. replace zipinc_qrtl_0_50=1 if zipinc_qrtl_2==1
+(222,061 real changes made)
+
+. gen zipinc_qrtl_50_100 =0
+
+. replace zipinc_qrtl_50_100=1 if zipinc_qrtl_2==2
+(162,166 real changes made)
+
+. gen zipinc_qrtl_miss=0
+
+. replace zipinc_qrtl_miss=1 if zipinc_qrtl_2==5
+(6,828 real changes made)
+
+. 
+. *Logistic Regression with In-Hospital Mortality
+. *Count tables
+. svy: tabulate died allPAD, count format(%20.10f)
+(running tabulate on estimation sample)
+
+Number of strata =     1                           Number of obs   =   391,055
+Number of PSUs   = 3,988                           Population size = 1,955,275
+                                                   Design df       =     3,987
+
+----------------------------------------------------------------------
+Died      |
+during    |
+hospitali |                           allPAD                          
+zation    |                  0                   1               Total
+----------+-----------------------------------------------------------
+        0 | 1749005.0374894808     7985.0081021000  1756990.0455915809
+        1 |  197165.0291202952     1120.0013851000   198285.0305053952
+          | 
+    Total | 1946170.0666097759     9105.0094872000  1955275.0760959464
+----------------------------------------------------------------------
+Key: Weighted count
+
+  Pearson:
+    Uncorrected   chi2(1)         =    9.3662
+    Design-based  F(1, 3987)      =    9.2029     P = 0.0024
+
+. *Risk Ratios
+. svy: glm died i.allPAD, fam(bin) link(log) nolog eform
+(running glm on estimation sample)
+
+Survey: Generalized linear models
+
+Number of strata =     1                           Number of obs   =   391,055
+Number of PSUs   = 3,988                           Population size = 1,955,275
+                                                   Design df       =     3,987
+
+------------------------------------------------------------------------------
+             |             Linearized
+        died |     exp(b)   std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+    1.allPAD |   1.214197   .0768656     3.07   0.002     1.072474    1.374647
+       _cons |   .1013092   .0008856  -261.92   0.000     .0995878    .1030605
+------------------------------------------------------------------------------
+
+. 
+. *Adding in sociodemographic factors
+. *These are the count tables
+. svy: mean age if died==1
+(running mean on estimation sample)
+
+Survey: Mean estimation
+
+Number of strata =     1          Number of obs   =     39,657
+Number of PSUs   = 2,914          Population size = 198,285.03
+                                  Design df       =      2,913
+
+--------------------------------------------------------------
+             |             Linearized
+             |       Mean   std. err.     [95% conf. interval]
+-------------+------------------------------------------------
+         age |   71.44613   .1350048      71.18141    71.71084
+--------------------------------------------------------------
+
+. svy: mean age if died==0
+(running mean on estimation sample)
+
+Survey: Mean estimation
+
+Number of strata =     1           Number of obs   =   351,398
+Number of PSUs   = 3,968           Population size = 1,756,990
+                                   Design df       =     3,967
+
+--------------------------------------------------------------
+             |             Linearized
+             |       Mean   std. err.     [95% conf. interval]
+-------------+------------------------------------------------
+         age |   68.52478   .0907428      68.34688    68.70269
+--------------------------------------------------------------
+
+. svy: mean elix if died==1
+(running mean on estimation sample)
+
+Survey: Mean estimation
+
+Number of strata =     1          Number of obs   =     39,657
+Number of PSUs   = 2,914          Population size = 198,285.03
+                                  Design df       =      2,913
+
+--------------------------------------------------------------
+             |             Linearized
+             |       Mean   std. err.     [95% conf. interval]
+-------------+------------------------------------------------
+        elix |   5.681822   .0209099      5.640822    5.722821
+--------------------------------------------------------------
+
+. svy: mean elix if died==0
+(running mean on estimation sample)
+
+Survey: Mean estimation
+
+Number of strata =     1           Number of obs   =   351,398
+Number of PSUs   = 3,968           Population size = 1,756,990
+                                   Design df       =     3,967
+
+--------------------------------------------------------------
+             |             Linearized
+             |       Mean   std. err.     [95% conf. interval]
+-------------+------------------------------------------------
+        elix |    4.94973    .012128      4.925952    4.973507
+--------------------------------------------------------------
+
+. foreach var of varlist race male zipinc_qrtl_2 onlysepticshock {
+  2.         svy: tab `var' died ,  count format(%20.10f)
+  3. }
+(running tabulate on estimation sample)
+
+Number of strata =     1                           Number of obs   =   391,055
+Number of PSUs   = 3,988                           Population size = 1,955,275
+                                                   Design df       =     3,987
+
+----------------------------------------------------------------------
+Race      |                Died during hospitalization                
+(uniform) |                  0                   1               Total
+----------+-----------------------------------------------------------
+    White | 1233994.9788091420   136690.0142094886  1370684.9930186307
+    Black |  244985.1018500351    28310.0145344002   273295.1163844353
+ Hispanic |  175259.9923268747    19015.0008410001   194274.9931678748
+ Asian or |   46534.9712428976     6599.9982270000    53134.9694698976
+ Native A |   12684.9828145002     1610.0013838000    14294.9841983002
+    Other |   43530.0185488994     6060.0013097000    49590.0198585994
+          | 
+    Total | 1756990.0455923493   198285.0305053888  1955275.0760959464
+----------------------------------------------------------------------
+Key: Weighted count
+
+  Pearson:
+    Uncorrected   chi2(5)         =  128.3527
+    Design-based  F(4.88, 19471.38)=   17.5956    P = 0.0000
+(running tabulate on estimation sample)
+
+Number of strata =     1                           Number of obs   =   391,055
+Number of PSUs   = 3,988                           Population size = 1,955,275
+                                                   Design df       =     3,987
+
+----------------------------------------------------------------------
+          |                Died during hospitalization                
+     male |                  0                   1               Total
+----------+-----------------------------------------------------------
+        0 |  872760.0432673341    96505.0274208950   969265.0706882292
+        1 |  884230.0023239906   101780.0030844936   986010.0054084841
+          | 
+    Total | 1756990.0455913246   198285.0305053886  1955275.0760959464
+----------------------------------------------------------------------
+Key: Weighted count
+
+  Pearson:
+    Uncorrected   chi2(1)         =   14.3620
+    Design-based  F(1, 3987)      =   13.9767     P = 0.0002
+(running tabulate on estimation sample)
+
+Number of strata =     1                           Number of obs   =   391,055
+Number of PSUs   = 3,988                           Population size = 1,955,275
+                                                   Design df       =     3,987
+
+----------------------------------------------------------------------
+zipinc_qr |                Died during hospitalization                
+tl_2      |                  0                   1               Total
+----------+-----------------------------------------------------------
+        1 |  997394.9789256464   112910.0014867868  1110304.9804124334
+        2 |  728745.0988641973    82085.0292465024   810830.1281106996
+        5 |   30849.9678017002     3289.9997721000    34139.9675738002
+          | 
+    Total | 1756990.0455915437   198285.0305053892  1955275.0760959464
+----------------------------------------------------------------------
+Key: Weighted count
+
+  Pearson:
+    Uncorrected   chi2(2)         =    2.1537
+    Design-based  F(1.87, 7437.43)=    0.7046     P = 0.4850
+(running tabulate on estimation sample)
+
+Number of strata =     1                           Number of obs   =   391,055
+Number of PSUs   = 3,988                           Population size = 1,955,275
+                                                   Design df       =     3,987
+
+----------------------------------------------------------------------
+onlysepti |                Died during hospitalization                
+cshock    |                  0                   1               Total
+----------+-----------------------------------------------------------
+        0 | 1756755.0463057975   198210.0303805956  1954965.0766863930
+        1 |     234.9992858000       75.0001248000      309.9994106000
+          | 
+    Total | 1756990.0455915974   198285.0305053956  1955275.0760959464
+----------------------------------------------------------------------
+Key: Weighted count
+
+  Pearson:
+    Uncorrected   chi2(1)         =   13.4379
+    Design-based  F(1, 3987)      =   13.7476     P = 0.0002
+
+. svy: glm died i.allPAD age i.race i.male i.zipinc_qrtl_2, fam(bin) link(log) nolog eform
+(running glm on estimation sample)
+
+Survey: Generalized linear models
+
+Number of strata =     1                           Number of obs   =   391,055
+Number of PSUs   = 3,988                           Population size = 1,955,275
+                                                   Design df       =     3,987
+
+--------------------------------------------------------------------------------------------
+                           |             Linearized
+                      died |     exp(b)   std. err.      t    P>|t|     [95% conf. interval]
+---------------------------+----------------------------------------------------------------
+                  1.allPAD |   1.176286   .0744715     2.56   0.010     1.038978     1.33174
+                       age |   1.012315   .0004173    29.69   0.000     1.011497    1.013133
+                           |
+                      race |
+                    Black  |   1.109851    .020122     5.75   0.000     1.071093    1.150011
+                 Hispanic  |   1.038195   .0221041     1.76   0.078     .9957509    1.082449
+Asian or Pacific Islander  |   1.249493   .0409153     6.80   0.000     1.171797    1.332341
+          Native American  |    1.25759   .0712959     4.04   0.000     1.125299    1.405434
+                    Other  |   1.264941   .0408463     7.28   0.000     1.187342    1.347612
+                           |
+                    1.male |   1.056661   .0102366     5.69   0.000     1.036781    1.076922
+                           |
+             zipinc_qrtl_2 |
+                        2  |    .963221   .0132029    -2.73   0.006     .9376806    .9894571
+                        5  |   .9698635   .0382271    -0.78   0.438     .8977397    1.047782
+                           |
+                     _cons |   .0410229   .0014451   -90.66   0.000     .0382853    .0439561
+--------------------------------------------------------------------------------------------
+
+. 
+. *Get confidence intervals of proportions
+. foreach var of varlist allPAD white black hispanic asian native race_other male zipinc_qrtl_0_50 zipinc_
+> qrtl_50_100 zipinc_qrtl_miss onlysepticshock {
+  2.         svy: prop died if `var'==1
+  3.         svy: prop died if `var'==0
+  4. } 
+(running proportion on estimation sample)
+
+Survey: Proportion estimation
+
+Number of strata =     1          Number of obs   =      1,821
+Number of PSUs   = 1,041          Population size = 9,105.0095
+                                  Design df       =      1,040
+
+--------------------------------------------------------------
+             |             Linearized            Logit
+             | Proportion   std. err.     [95% conf. interval]
+-------------+------------------------------------------------
+        died |
+          0  |   .8769906    .007826      .8607922    .8915417
+          1  |   .1230094    .007826      .1084583    .1392078
+--------------------------------------------------------------
+(running proportion on estimation sample)
+
+Survey: Proportion estimation
+
+Number of strata =     1           Number of obs   =   389,234
+Number of PSUs   = 3,987           Population size = 1,946,170
+                                   Design df       =     3,986
+
+--------------------------------------------------------------
+             |             Linearized            Logit
+             | Proportion   std. err.     [95% conf. interval]
+-------------+------------------------------------------------
+        died |
+          0  |   .8986908   .0008856      .8969412    .9004139
+          1  |   .1013092   .0008856      .0995861    .1030588
+--------------------------------------------------------------
+(running proportion on estimation sample)
+
+Survey: Proportion estimation
+
+Number of strata =     1           Number of obs   =   274,137
+Number of PSUs   = 3,874           Population size = 1,370,685
+                                   Design df       =     3,873
+
+--------------------------------------------------------------
+             |             Linearized            Logit
+             | Proportion   std. err.     [95% conf. interval]
+-------------+------------------------------------------------
+        died |
+          0  |   .9002761   .0009853      .8983277    .9021913
+          1  |   .0997239   .0009853      .0978087    .1016723
+--------------------------------------------------------------
+(running proportion on estimation sample)
+
+Survey: Proportion estimation
+
+Number of strata =     1          Number of obs   =    116,918
+Number of PSUs   = 2,972          Population size = 584,590.08
+                                  Design df       =      2,971
+
+--------------------------------------------------------------
+             |             Linearized            Logit
+             | Proportion   std. err.     [95% conf. interval]
+-------------+------------------------------------------------
+        died |
+          0  |   .8946355   .0012861      .8920871    .8971308
+          1  |   .1053645   .0012861      .1028692    .1079129
+--------------------------------------------------------------
+(running proportion on estimation sample)
+
+Survey: Proportion estimation
+
+Number of strata =     1          Number of obs   =     54,659
+Number of PSUs   = 2,411          Population size = 273,295.12
+                                  Design df       =      2,410
+
+--------------------------------------------------------------
+             |             Linearized            Logit
+             | Proportion   std. err.     [95% conf. interval]
+-------------+------------------------------------------------
+        died |
+          0  |   .8964123   .0017693      .8928911    .8998307
+          1  |   .1035877   .0017693      .1001693    .1071089
+--------------------------------------------------------------
+(running proportion on estimation sample)
+
+Survey: Proportion estimation
+
+Number of strata =     1           Number of obs   =   336,396
+Number of PSUs   = 3,965           Population size = 1,681,980
+                                   Design df       =     3,964
+
+--------------------------------------------------------------
+             |             Linearized            Logit
+             | Proportion   std. err.     [95% conf. interval]
+-------------+------------------------------------------------
+        died |
+          0  |   .8989435   .0009158      .8971337     .900725
+          1  |   .1010565   .0009158       .099275    .1028663
+--------------------------------------------------------------
+(running proportion on estimation sample)
+
+Survey: Proportion estimation
+
+Number of strata =     1          Number of obs   =     38,855
+Number of PSUs   = 2,040          Population size = 194,274.99
+                                  Design df       =      2,039
+
+--------------------------------------------------------------
+             |             Linearized            Logit
+             | Proportion   std. err.     [95% conf. interval]
+-------------+------------------------------------------------
+        died |
+          0  |   .9021233   .0019233      .8982861    .9058308
+          1  |   .0978767   .0019233      .0941692    .1017139
+--------------------------------------------------------------
+(running proportion on estimation sample)
+
+Survey: Proportion estimation
+
+Number of strata =     1           Number of obs   =   352,200
+Number of PSUs   = 3,960           Population size = 1,761,000
+                                   Design df       =     3,959
+
+--------------------------------------------------------------
+             |             Linearized            Logit
+             | Proportion   std. err.     [95% conf. interval]
+-------------+------------------------------------------------
+        died |
+          0  |   .8981999    .000925       .896372    .8999992
+          1  |   .1018001    .000925      .1000008     .103628
+--------------------------------------------------------------
+(running proportion on estimation sample)
+
+Survey: Proportion estimation
+
+Number of strata =     1          Number of obs   =     10,627
+Number of PSUs   = 1,400          Population size = 53,134.969
+                                  Design df       =      1,399
+
+--------------------------------------------------------------
+             |             Linearized            Logit
+             | Proportion   std. err.     [95% conf. interval]
+-------------+------------------------------------------------
+        died |
+          0  |    .875788   .0041259      .8674656    .8836579
+          1  |    .124212   .0041259      .1163421    .1325344
+--------------------------------------------------------------
+(running proportion on estimation sample)
+
+Survey: Proportion estimation
+
+Number of strata =     1           Number of obs   =   380,428
+Number of PSUs   = 3,987           Population size = 1,902,140
+                                   Design df       =     3,986
+
+--------------------------------------------------------------
+             |             Linearized            Logit
+             | Proportion   std. err.     [95% conf. interval]
+-------------+------------------------------------------------
+        died |
+          0  |   .8992266   .0008875      .8974732    .9009534
+          1  |   .1007734   .0008875      .0990466    .1025268
+--------------------------------------------------------------
+(running proportion on estimation sample)
+
+Survey: Proportion estimation
+
+Number of strata =   1            Number of obs   =      2,859
+Number of PSUs   = 708            Population size = 14,294.984
+                                  Design df       =        707
+
+--------------------------------------------------------------
+             |             Linearized            Logit
+             | Proportion   std. err.     [95% conf. interval]
+-------------+------------------------------------------------
+        died |
+          0  |    .887373   .0063235      .8743479    .8992035
+          1  |    .112627   .0063235      .1007965    .1256521
+--------------------------------------------------------------
+(running proportion on estimation sample)
+
+Survey: Proportion estimation
+
+Number of strata =     1           Number of obs   =   388,196
+Number of PSUs   = 3,981           Population size = 1,940,980
+                                   Design df       =     3,980
+
+--------------------------------------------------------------
+             |             Linearized            Logit
+             | Proportion   std. err.     [95% conf. interval]
+-------------+------------------------------------------------
+        died |
+          0  |   .8986723   .0008889      .8969161    .9004019
+          1  |   .1013277   .0008889      .0995981    .1030839
+--------------------------------------------------------------
+(running proportion on estimation sample)
+
+Survey: Proportion estimation
+
+Number of strata =     1           Number of obs   =     9,918
+Number of PSUs   = 1,384           Population size = 49,590.02
+                                   Design df       =     1,383
+
+--------------------------------------------------------------
+             |             Linearized            Logit
+             | Proportion   std. err.     [95% conf. interval]
+-------------+------------------------------------------------
+        died |
+          0  |    .877798   .0038829      .8699743     .885213
+          1  |    .122202   .0038829       .114787    .1300257
+--------------------------------------------------------------
+(running proportion on estimation sample)
+
+Survey: Proportion estimation
+
+Number of strata =     1           Number of obs   =   381,137
+Number of PSUs   = 3,967           Population size = 1,905,685
+                                   Design df       =     3,966
+
+--------------------------------------------------------------
+             |             Linearized            Logit
+             | Proportion   std. err.     [95% conf. interval]
+-------------+------------------------------------------------
+        died |
+          0  |   .8991307   .0008886      .8973752    .9008596
+          1  |   .1008693   .0008886      .0991404    .1026248
+--------------------------------------------------------------
+(running proportion on estimation sample)
+
+Survey: Proportion estimation
+
+Number of strata =     1          Number of obs   =    197,202
+Number of PSUs   = 3,774          Population size = 986,010.01
+                                  Design df       =      3,773
+
+--------------------------------------------------------------
+             |             Linearized            Logit
+             | Proportion   std. err.     [95% conf. interval]
+-------------+------------------------------------------------
+        died |
+          0  |   .8967759   .0009993      .8948002    .8987187
+          1  |   .1032241   .0009993      .1012813    .1051998
+--------------------------------------------------------------
+(running proportion on estimation sample)
+
+Survey: Proportion estimation
+
+Number of strata =     1          Number of obs   =    193,853
+Number of PSUs   = 3,818          Population size = 969,265.07
+                                  Design df       =      3,817
+
+--------------------------------------------------------------
+             |             Linearized            Logit
+             | Proportion   std. err.     [95% conf. interval]
+-------------+------------------------------------------------
+        died |
+          0  |   .9004348   .0010235      .8984102    .9024236
+          1  |   .0995652   .0010235      .0975764    .1015898
+--------------------------------------------------------------
+(running proportion on estimation sample)
+
+Survey: Proportion estimation
+
+Number of strata =     1           Number of obs   =   222,061
+Number of PSUs   = 3,839           Population size = 1,110,305
+                                   Design df       =     3,838
+
+--------------------------------------------------------------
+             |             Linearized            Logit
+             | Proportion   std. err.     [95% conf. interval]
+-------------+------------------------------------------------
+        died |
+          0  |   .8983072   .0010955      .8961392     .900435
+          1  |   .1016928   .0010955       .099565    .1038608
+--------------------------------------------------------------
+(running proportion on estimation sample)
+
+Survey: Proportion estimation
+
+Number of strata =     1           Number of obs   =   168,994
+Number of PSUs   = 3,109           Population size = 844,970.1
+                                   Design df       =     3,108
+
+--------------------------------------------------------------
+             |             Linearized            Logit
+             | Proportion   std. err.     [95% conf. interval]
+-------------+------------------------------------------------
+        died |
+          0  |   .8989609   .0011228       .896738    .9011412
+          1  |   .1010391   .0011228      .0988588     .103262
+--------------------------------------------------------------
+(running proportion on estimation sample)
+
+Survey: Proportion estimation
+
+Number of strata =     1          Number of obs   =    162,166
+Number of PSUs   = 2,936          Population size = 810,830.13
+                                  Design df       =      2,935
+
+--------------------------------------------------------------
+             |             Linearized            Logit
+             | Proportion   std. err.     [95% conf. interval]
+-------------+------------------------------------------------
+        died |
+          0  |   .8987642   .0011499      .8964871    .9009968
+          1  |   .1012358   .0011499      .0990032    .1035129
+--------------------------------------------------------------
+(running proportion on estimation sample)
+
+Survey: Proportion estimation
+
+Number of strata =     1           Number of obs   =   228,889
+Number of PSUs   = 3,862           Population size = 1,144,445
+                                   Design df       =     3,861
+
+--------------------------------------------------------------
+             |             Linearized            Logit
+             | Proportion   std. err.     [95% conf. interval]
+-------------+------------------------------------------------
+        died |
+          0  |   .8984661    .001084      .8963209    .9005718
+          1  |   .1015339    .001084      .0994282    .1036791
+--------------------------------------------------------------
+(running proportion on estimation sample)
+
+Survey: Proportion estimation
+
+Number of strata =     1          Number of obs   =      6,828
+Number of PSUs   = 1,779          Population size = 34,139.968
+                                  Design df       =      1,778
+
+--------------------------------------------------------------
+             |             Linearized            Logit
+             | Proportion   std. err.     [95% conf. interval]
+-------------+------------------------------------------------
+        died |
+          0  |    .903632   .0038291      .8958561    .9108851
+          1  |    .096368   .0038291      .0891149    .1041439
+--------------------------------------------------------------
+(running proportion on estimation sample)
+
+Survey: Proportion estimation
+
+Number of strata =     1           Number of obs   =   384,227
+Number of PSUs   = 3,988           Population size = 1,921,135
+                                   Design df       =     3,987
+
+--------------------------------------------------------------
+             |             Linearized            Logit
+             | Proportion   std. err.     [95% conf. interval]
+-------------+------------------------------------------------
+        died |
+          0  |   .8985001   .0008907      .8967404    .9002332
+          1  |   .1014999   .0008907      .0997668    .1032596
+--------------------------------------------------------------
+(running proportion on estimation sample)
+
+Survey: Proportion estimation
+
+Number of strata =  1             Number of obs   =         62
+Number of PSUs   = 56             Population size = 309.999411
+                                  Design df       =         55
+
+--------------------------------------------------------------
+             |             Linearized            Logit
+             | Proportion   std. err.     [95% conf. interval]
+-------------+------------------------------------------------
+        died |
+          0  |   .7580637   .0542367      .6340076    .8500173
+          1  |   .2419363   .0542367      .1499827    .3659924
+--------------------------------------------------------------
+(running proportion on estimation sample)
+
+Survey: Proportion estimation
+
+Number of strata =     1           Number of obs   =   390,993
+Number of PSUs   = 3,988           Population size = 1,954,965
+                                   Design df       =     3,987
+
+--------------------------------------------------------------
+             |             Linearized            Logit
+             | Proportion   std. err.     [95% conf. interval]
+-------------+------------------------------------------------
+        died |
+          0  |    .898612   .0008861      .8968615     .900336
+          1  |    .101388   .0008861       .099664    .1031385
+--------------------------------------------------------------
+
+. 
+. *Adding in comorbidities 
+. svy: glm died i.allPAD age i.race i.male i.zipinc_qrtl_2 elix, fam(bin) link(log) nolog eform
+(running glm on estimation sample)
+
+Survey: Generalized linear models
+
+Number of strata =     1                           Number of obs   =   391,055
+Number of PSUs   = 3,988                           Population size = 1,955,275
+                                                   Design df       =     3,987
+
+--------------------------------------------------------------------------------------------
+                           |             Linearized
+                      died |     exp(b)   std. err.      t    P>|t|     [95% conf. interval]
+---------------------------+----------------------------------------------------------------
+                  1.allPAD |   1.137877    .071422     2.06   0.040     1.006123    1.286885
+                       age |   1.010465   .0004398    23.92   0.000     1.009603    1.011328
+                           |
+                      race |
+                    Black  |   1.080083   .0196971     4.22   0.000     1.042148    1.119399
+                 Hispanic  |   1.039995    .022049     1.85   0.064     .9976528    1.084134
+Asian or Pacific Islander  |   1.259908   .0424735     6.85   0.000     1.179329    1.345994
+          Native American  |   1.244884   .0714708     3.82   0.000      1.11236    1.393197
+                    Other  |   1.280051   .0419735     7.53   0.000     1.200349    1.365046
+                           |
+                    1.male |   1.069295   .0103177     6.94   0.000     1.049257    1.089716
+                           |
+             zipinc_qrtl_2 |
+                        2  |   .9711866   .0132535    -2.14   0.032     .9455468    .9975216
+                        5  |     .98699   .0387964    -0.33   0.739     .9137845     1.06606
+                           |
+                      elix |   1.144523   .0030935    49.94   0.000     1.138474    1.150604
+                     _cons |   .0224958   .0008739   -97.68   0.000     .0208461    .0242761
+--------------------------------------------------------------------------------------------
+
+. *Sensitivity Analysis 4 - Odds Ratio
+. svy: glm died i.allPAD age i.race i.male i.zipinc_qrtl_2 elix, fam(bin) nolog eform
+(running glm on estimation sample)
+
+Survey: Generalized linear models
+
+Number of strata =     1                           Number of obs   =   391,055
+Number of PSUs   = 3,988                           Population size = 1,955,275
+                                                   Design df       =     3,987
+
+--------------------------------------------------------------------------------------------
+                           |             Linearized
+                      died |     exp(b)   std. err.      t    P>|t|     [95% conf. interval]
+---------------------------+----------------------------------------------------------------
+                  1.allPAD |   1.151985   .0833418     1.96   0.051     .9996471    1.327537
+                       age |   1.011759   .0004874    24.27   0.000     1.010804    1.012715
+                           |
+                      race |
+                    Black  |   1.084651   .0223379     3.95   0.000     1.041729    1.129342
+                 Hispanic  |   1.042887   .0248508     1.76   0.078     .9952856    1.092764
+Asian or Pacific Islander  |   1.298603   .0508888     6.67   0.000     1.202569    1.402306
+          Native American  |    1.27949   .0845993     3.73   0.000     1.123928    1.456582
+                    Other  |    1.32774   .0507805     7.41   0.000     1.231823    1.431125
+                           |
+                    1.male |   1.076523   .0117225     6.77   0.000     1.053784    1.099753
+                           |
+             zipinc_qrtl_2 |
+                        2  |   .9665173      .0149    -2.21   0.027      .937742    .9961756
+                        5  |   .9795277    .043015    -0.47   0.638     .8987226    1.067598
+                           |
+                      elix |   1.166753   .0037172    48.41   0.000     1.159488    1.174064
+                     _cons |   .0207114   .0008915   -90.08   0.000     .0190354    .0225351
+--------------------------------------------------------------------------------------------
+
+. *Sensitivity Analysis - Adding in explicit septic shock term
+. svy: mlogit died i.allPAD age i.race male i.zipinc_qrtl_2 elix i.onlysepticshock, rrr
+(running mlogit on estimation sample)
+
+Survey: Multinomial logistic regression
+
+Number of strata =     1                           Number of obs   =   391,055
+Number of PSUs   = 3,988                           Population size = 1,955,275
+                                                   Design df       =     3,987
+                                                   F(12, 3976)     =    275.40
+                                                   Prob > F        =    0.0000
+
+--------------------------------------------------------------------------------------------
+                           |             Linearized
+                      died |        RRR   std. err.      t    P>|t|     [95% conf. interval]
+---------------------------+----------------------------------------------------------------
+0                          |  (base outcome)
+---------------------------+----------------------------------------------------------------
+1                          |
+                  1.allPAD |   1.151025   .0832612     1.94   0.052     .9988332    1.326406
+                       age |   1.011772   .0004874    24.29   0.000     1.010817    1.012728
+                           |
+                      race |
+                    Black  |   1.084795   .0223364     3.95   0.000     1.041875    1.129483
+                 Hispanic  |   1.042872    .024851     1.76   0.078     .9952708     1.09275
+Asian or Pacific Islander  |   1.298532    .050894     6.67   0.000     1.202489    1.402247
+          Native American  |   1.280012   .0846407     3.73   0.000     1.124375    1.457192
+                    Other  |   1.327797   .0507875     7.41   0.000     1.231867    1.431198
+                           |
+                      male |   1.076522   .0117229     6.77   0.000     1.053782    1.099752
+                           |
+             zipinc_qrtl_2 |
+                        2  |    .966508   .0149008    -2.21   0.027     .9377311    .9961679
+                        5  |   .9794713   .0430144    -0.47   0.637     .8986675    1.067541
+                           |
+                      elix |   1.166821   .0037154    48.45   0.000      1.15956    1.174128
+         1.onlysepticshock |   3.698376   1.138684     4.25   0.000     2.022353      6.7634
+                     _cons |   .0206798   .0008905   -90.07   0.000     .0190055    .0225015
+--------------------------------------------------------------------------------------------
+Note: _cons estimates baseline relative risk for each outcome.
+
+. ******************
+. *Sensitivity analysis 5: e-value--to run once statistical analysis complete!
+. *ssc install evalue
+. *specify point estimate when ucl < 1 or lcl > 1
+. evalue rr 1.137877, lcl(1.006123) ucl(1.286885) true(1)
+   E-value (point estimate): 1.534
+   E-value (CI): 1.085
+
+. ****************
+. *Logistic Regression with Amputation
+. svy: tabulate amputot allPAD, count format(%20.10f)
+(running tabulate on estimation sample)
+
+Number of strata =     1                           Number of obs   =   391,055
+Number of PSUs   = 3,988                           Population size = 1,955,275
+                                                   Design df       =     3,987
+
+----------------------------------------------------------------------
+          |                           allPAD                          
+  amputot |                  0                   1               Total
+----------+-----------------------------------------------------------
+        0 | 1941120.0675151979     8520.0075723000  1949640.0750874979
+        1 |    5049.9990937000      585.0019149000     5635.0010086000
+          | 
+    Total | 1946170.0666088976     9105.0094872000  1955275.0760959464
+----------------------------------------------------------------------
+Key: Weighted count
+
+  Pearson:
+    Uncorrected   chi2(1)         = 2397.7134
+    Design-based  F(1, 3987)      = 2253.7010     P = 0.0000
+
+. svy: glm amputot i.allPAD, fam(bin) link(log) nolog eform
+(running glm on estimation sample)
+
+Survey: Generalized linear models
+
+Number of strata =     1                           Number of obs   =   391,055
+Number of PSUs   = 3,988                           Population size = 1,955,275
+                                                   Design df       =     3,987
+
+------------------------------------------------------------------------------
+             |             Linearized
+     amputot |     exp(b)   std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+    1.allPAD |    24.7609   2.425885    32.76   0.000     20.43369    30.00447
+       _cons |   .0025948   .0000959  -161.14   0.000     .0024135    .0027898
+------------------------------------------------------------------------------
+
+. 
+. *Adding in sociodemographic factors
+. svy: mean age if amputot==1
+(running mean on estimation sample)
+
+Survey: Mean estimation
+
+Number of strata =   1             Number of obs   =     1,127
+Number of PSUs   = 733             Population size = 5,635.001
+                                   Design df       =       732
+
+--------------------------------------------------------------
+             |             Linearized
+             |       Mean   std. err.     [95% conf. interval]
+-------------+------------------------------------------------
+         age |   60.13754   .3812097      59.38915    60.88594
+--------------------------------------------------------------
+
+. svy: mean age if amputot==0
+(running mean on estimation sample)
+
+Survey: Mean estimation
+
+Number of strata =     1           Number of obs   =   389,928
+Number of PSUs   = 3,988           Population size = 1,949,640
+                                   Design df       =     3,987
+
+--------------------------------------------------------------
+             |             Linearized
+             |       Mean   std. err.     [95% conf. interval]
+-------------+------------------------------------------------
+         age |   68.84613   .0912626      68.66721    69.02506
+--------------------------------------------------------------
+
+. svy: mean elix if amputot==1
+(running mean on estimation sample)
+
+Survey: Mean estimation
+
+Number of strata =   1             Number of obs   =     1,127
+Number of PSUs   = 733             Population size = 5,635.001
+                                   Design df       =       732
+
+--------------------------------------------------------------
+             |             Linearized
+             |       Mean   std. err.     [95% conf. interval]
+-------------+------------------------------------------------
+        elix |   5.091393   .0617188      4.970226     5.21256
+--------------------------------------------------------------
+
+. svy: mean elix if amputot==0
+(running mean on estimation sample)
+
+Survey: Mean estimation
+
+Number of strata =     1           Number of obs   =   389,928
+Number of PSUs   = 3,988           Population size = 1,949,640
+                                   Design df       =     3,987
+
+--------------------------------------------------------------
+             |             Linearized
+             |       Mean   std. err.     [95% conf. interval]
+-------------+------------------------------------------------
+        elix |   5.023776   .0124931      4.999283     5.04827
+--------------------------------------------------------------
+
+. foreach var of varlist race male zipinc_qrtl_2 {
+  2.         svy: tab `var' amputot,  count format(%20.10f)
+  3. }
+(running tabulate on estimation sample)
+
+Number of strata =     1                           Number of obs   =   391,055
+Number of PSUs   = 3,988                           Population size = 1,955,275
+                                                   Design df       =     3,987
+
+----------------------------------------------------------------------
+Race      |                          amputot                          
+(uniform) |                  0                   1               Total
+----------+-----------------------------------------------------------
+    White | 1367554.9920097084     3130.0010088000  1370684.9930185084
+    Black |  271880.1150290721     1415.0013554000   273295.1163844721
+ Hispanic |  193569.9935547629      704.9996131000   194274.9931678628
+ Asian or |   52994.9702181960      139.9992517000    53134.9694698960
+ Native A |   14199.9842905002       94.9999078000    14294.9841983002
+    Other |   49440.0199868000      149.9998718000    49590.0198586000
+          | 
+    Total | 1949640.0750890397     5635.0010086000  1955275.0760959464
+----------------------------------------------------------------------
+Key: Weighted count
+
+  Pearson:
+    Uncorrected   chi2(5)         =  156.3317
+    Design-based  F(4.76, 18991.26)=   26.7933    P = 0.0000
+(running tabulate on estimation sample)
+
+Number of strata =     1                           Number of obs   =   391,055
+Number of PSUs   = 3,988                           Population size = 1,955,275
+                                                   Design df       =     3,987
+
+----------------------------------------------------------------------
+          |                          amputot                          
+     male |                  0                   1               Total
+----------+-----------------------------------------------------------
+        0 |  967910.0705048683     1355.0001836000   969265.0706884683
+        1 |  981730.0045837710     4280.0008250000   986010.0054087710
+          | 
+    Total | 1949640.0750886393     5635.0010086000  1955275.0760959464
+----------------------------------------------------------------------
+Key: Weighted count
+
+  Pearson:
+    Uncorrected   chi2(1)         =  294.5936
+    Design-based  F(1, 3987)      =  285.3735     P = 0.0000
+(running tabulate on estimation sample)
+
+Number of strata =     1                           Number of obs   =   391,055
+Number of PSUs   = 3,988                           Population size = 1,955,275
+                                                   Design df       =     3,987
+
+----------------------------------------------------------------------
+zipinc_qr |                          amputot                          
+tl_2      |                  0                   1               Total
+----------+-----------------------------------------------------------
+        1 | 1106714.9805337521     3589.9998788000  1110304.9804125521
+        2 |  808925.1271627177     1905.0009481000   810830.1281108177
+        5 |   33999.9673920997      140.0001817000    34139.9675737997
+          | 
+    Total | 1949640.0750885697     5635.0010086000  1955275.0760959464
+----------------------------------------------------------------------
+Key: Weighted count
+
+  Pearson:
+    Uncorrected   chi2(2)         =   29.0736
+    Design-based  F(1.99, 7939.47)=   14.1762     P = 0.0000
+
+. svy: glm amputot i.allPAD age i.race i.male i.zipinc_qrtl_2 , fam(bin) link(log) nolog eform
+(running glm on estimation sample)
+
+Survey: Generalized linear models
+
+Number of strata =     1                           Number of obs   =   391,055
+Number of PSUs   = 3,988                           Population size = 1,955,275
+                                                   Design df       =     3,987
+
+--------------------------------------------------------------------------------------------
+                           |             Linearized
+                   amputot |     exp(b)   std. err.      t    P>|t|     [95% conf. interval]
+---------------------------+----------------------------------------------------------------
+                  1.allPAD |   24.39171   2.395213    32.53   0.000     20.12013    29.57017
+                       age |   .9710757   .0012239   -23.29   0.000     .9686793    .9734782
+                           |
+                      race |
+                    Black  |   1.764358   .1309003     7.65   0.000     1.525512      2.0406
+                 Hispanic  |   1.294961   .1250825     2.68   0.007     1.071551    1.564951
+Asian or Pacific Islander  |   1.154881   .2833592     0.59   0.557     .7138789    1.868313
+          Native American  |   2.224323   .5260133     3.38   0.001      1.39908    3.536333
+                    Other  |   1.153645   .2150301     0.77   0.443     .8005102    1.662561
+                           |
+                    1.male |   2.877721   .2052915    14.82   0.000     2.502114    3.309713
+                           |
+             zipinc_qrtl_2 |
+                        2  |   .8460773   .0562882    -2.51   0.012     .7426151     .963954
+                        5  |   1.086259   .2020975     0.44   0.657      .754258    1.564396
+                           |
+                     _cons |   .0079995   .0008846   -43.66   0.000     .0064403    .0099362
+--------------------------------------------------------------------------------------------
+
+. 
+. *Confidence Intervals of proportions
+. foreach var of varlist allPAD white black hispanic asian native race_other male zipinc_qrtl_0_50 zipinc_
+> qrtl_50_100 zipinc_qrtl_miss {
+  2.         svy: prop amputot if `var'==1
+  3.         svy: prop amputot if `var'==0
+  4. } 
+(running proportion on estimation sample)
+
+Survey: Proportion estimation
+
+Number of strata =     1          Number of obs   =      1,821
+Number of PSUs   = 1,041          Population size = 9,105.0095
+                                  Design df       =      1,040
+
+--------------------------------------------------------------
+             |             Linearized            Logit
+             | Proportion   std. err.     [95% conf. interval]
+-------------+------------------------------------------------
+     amputot |
+          0  |   .9357494   .0058242      .9233296    .9462745
+          1  |   .0642506   .0058242      .0537255    .0766704
+--------------------------------------------------------------
+(running proportion on estimation sample)
+
+Survey: Proportion estimation
+
+Number of strata =     1           Number of obs   =   389,234
+Number of PSUs   = 3,987           Population size = 1,946,170
+                                   Design df       =     3,986
+
+--------------------------------------------------------------
+             |             Linearized            Logit
+             | Proportion   std. err.     [95% conf. interval]
+-------------+------------------------------------------------
+     amputot |
+          0  |   .9974052   .0000959      .9972102    .9975865
+          1  |   .0025948   .0000959      .0024135    .0027898
+--------------------------------------------------------------
+(running proportion on estimation sample)
+
+Survey: Proportion estimation
+
+Number of strata =     1           Number of obs   =   274,137
+Number of PSUs   = 3,874           Population size = 1,370,685
+                                   Design df       =     3,873
+
+--------------------------------------------------------------
+             |             Linearized            Logit
+             | Proportion   std. err.     [95% conf. interval]
+-------------+------------------------------------------------
+     amputot |
+          0  |   .9977165   .0001041       .997503    .9979117
+          1  |   .0022835   .0001041      .0020883     .002497
+--------------------------------------------------------------
+(running proportion on estimation sample)
+
+Survey: Proportion estimation
+
+Number of strata =     1          Number of obs   =    116,918
+Number of PSUs   = 2,972          Population size = 584,590.08
+                                  Design df       =      2,971
+
+--------------------------------------------------------------
+             |             Linearized            Logit
+             | Proportion   std. err.     [95% conf. interval]
+-------------+------------------------------------------------
+     amputot |
+          0  |   .9957149    .000207      .9952893    .9961023
+          1  |   .0042851    .000207      .0038977    .0047107
+--------------------------------------------------------------
+(running proportion on estimation sample)
+
+Survey: Proportion estimation
+
+Number of strata =     1          Number of obs   =     54,659
+Number of PSUs   = 2,411          Population size = 273,295.12
+                                  Design df       =      2,410
+
+--------------------------------------------------------------
+             |             Linearized            Logit
+             | Proportion   std. err.     [95% conf. interval]
+-------------+------------------------------------------------
+     amputot |
+          0  |   .9948224   .0003099      .9941778     .995396
+          1  |   .0051776   .0003099       .004604    .0058222
+--------------------------------------------------------------
+(running proportion on estimation sample)
+
+Survey: Proportion estimation
+
+Number of strata =     1           Number of obs   =   336,396
+Number of PSUs   = 3,965           Population size = 1,681,980
+                                   Design df       =     3,964
+
+--------------------------------------------------------------
+             |             Linearized            Logit
+             | Proportion   std. err.     [95% conf. interval]
+-------------+------------------------------------------------
+     amputot |
+          0  |   .9974911   .0000979      .9972915    .9976759
+          1  |   .0025089   .0000979      .0023241    .0027085
+--------------------------------------------------------------
+(running proportion on estimation sample)
+
+Survey: Proportion estimation
+
+Number of strata =     1          Number of obs   =     38,855
+Number of PSUs   = 2,040          Population size = 194,274.99
+                                  Design df       =      2,039
+
+--------------------------------------------------------------
+             |             Linearized            Logit
+             | Proportion   std. err.     [95% conf. interval]
+-------------+------------------------------------------------
+     amputot |
+          0  |   .9963711   .0003145      .9956991    .9969385
+          1  |   .0036289   .0003145      .0030615    .0043009
+--------------------------------------------------------------
+(running proportion on estimation sample)
+
+Survey: Proportion estimation
+
+Number of strata =     1           Number of obs   =   352,200
+Number of PSUs   = 3,960           Population size = 1,761,000
+                                   Design df       =     3,959
+
+--------------------------------------------------------------
+             |             Linearized            Logit
+             | Proportion   std. err.     [95% conf. interval]
+-------------+------------------------------------------------
+     amputot |
+          0  |   .9972005   .0001025      .9969922    .9973943
+          1  |   .0027995   .0001025      .0026057    .0030078
+--------------------------------------------------------------
+(running proportion on estimation sample)
+
+Survey: Proportion estimation
+
+Number of strata =     1          Number of obs   =     10,627
+Number of PSUs   = 1,400          Population size = 53,134.969
+                                  Design df       =      1,399
+
+--------------------------------------------------------------
+             |             Linearized            Logit
+             | Proportion   std. err.     [95% conf. interval]
+-------------+------------------------------------------------
+     amputot |
+          0  |   .9973652    .000641      .9957553    .9983655
+          1  |   .0026348    .000641      .0016345    .0042447
+--------------------------------------------------------------
+(running proportion on estimation sample)
+
+Survey: Proportion estimation
+
+Number of strata =     1           Number of obs   =   380,428
+Number of PSUs   = 3,987           Population size = 1,902,140
+                                   Design df       =     3,986
+
+--------------------------------------------------------------
+             |             Linearized            Logit
+             | Proportion   std. err.     [95% conf. interval]
+-------------+------------------------------------------------
+     amputot |
+          0  |   .9971111    .000101      .9969061    .9973026
+          1  |   .0028889    .000101      .0026974    .0030939
+--------------------------------------------------------------
+(running proportion on estimation sample)
+
+Survey: Proportion estimation
+
+Number of strata =   1            Number of obs   =      2,859
+Number of PSUs   = 708            Population size = 14,294.984
+                                  Design df       =        707
+
+--------------------------------------------------------------
+             |             Linearized            Logit
+             | Proportion   std. err.     [95% conf. interval]
+-------------+------------------------------------------------
+     amputot |
+          0  |   .9933543   .0015851      .9893945    .9958419
+          1  |   .0066457   .0015851      .0041581    .0106055
+--------------------------------------------------------------
+(running proportion on estimation sample)
+
+Survey: Proportion estimation
+
+Number of strata =     1           Number of obs   =   388,196
+Number of PSUs   = 3,981           Population size = 1,940,980
+                                   Design df       =     3,980
+
+--------------------------------------------------------------
+             |             Linearized            Logit
+             | Proportion   std. err.     [95% conf. interval]
+-------------+------------------------------------------------
+     amputot |
+          0  |   .9971458   .0000995       .996944    .9973343
+          1  |   .0028542   .0000995      .0026657     .003056
+--------------------------------------------------------------
+(running proportion on estimation sample)
+
+Survey: Proportion estimation
+
+Number of strata =     1           Number of obs   =     9,918
+Number of PSUs   = 1,384           Population size = 49,590.02
+                                   Design df       =     1,383
+
+--------------------------------------------------------------
+             |             Linearized            Logit
+             | Proportion   std. err.     [95% conf. interval]
+-------------+------------------------------------------------
+     amputot |
+          0  |   .9969752   .0005575      .9956586    .9978933
+          1  |   .0030248   .0005575      .0021067    .0043414
+--------------------------------------------------------------
+(running proportion on estimation sample)
+
+Survey: Proportion estimation
+
+Number of strata =     1           Number of obs   =   381,137
+Number of PSUs   = 3,967           Population size = 1,905,685
+                                   Design df       =     3,966
+
+--------------------------------------------------------------
+             |             Linearized            Logit
+             | Proportion   std. err.     [95% conf. interval]
+-------------+------------------------------------------------
+     amputot |
+          0  |   .9971218   .0001006      .9969177    .9973124
+          1  |   .0028782   .0001006      .0026876    .0030823
+--------------------------------------------------------------
+(running proportion on estimation sample)
+
+Survey: Proportion estimation
+
+Number of strata =     1          Number of obs   =    197,202
+Number of PSUs   = 3,774          Population size = 986,010.01
+                                  Design df       =      3,773
+
+--------------------------------------------------------------
+             |             Linearized            Logit
+             | Proportion   std. err.     [95% conf. interval]
+-------------+------------------------------------------------
+     amputot |
+          0  |   .9956593    .000167      .9953193    .9959746
+          1  |   .0043407    .000167      .0040254    .0046807
+--------------------------------------------------------------
+(running proportion on estimation sample)
+
+Survey: Proportion estimation
+
+Number of strata =     1          Number of obs   =    193,853
+Number of PSUs   = 3,818          Population size = 969,265.07
+                                  Design df       =      3,817
+
+--------------------------------------------------------------
+             |             Linearized            Logit
+             | Proportion   std. err.     [95% conf. interval]
+-------------+------------------------------------------------
+     amputot |
+          0  |    .998602   .0000889      .9984164    .9987659
+          1  |    .001398   .0000889      .0012341    .0015836
+--------------------------------------------------------------
+(running proportion on estimation sample)
+
+Survey: Proportion estimation
+
+Number of strata =     1           Number of obs   =   222,061
+Number of PSUs   = 3,839           Population size = 1,110,305
+                                   Design df       =     3,838
+
+--------------------------------------------------------------
+             |             Linearized            Logit
+             | Proportion   std. err.     [95% conf. interval]
+-------------+------------------------------------------------
+     amputot |
+          0  |   .9967667   .0001385      .9964834    .9970271
+          1  |   .0032333   .0001385      .0029729    .0035166
+--------------------------------------------------------------
+(running proportion on estimation sample)
+
+Survey: Proportion estimation
+
+Number of strata =     1           Number of obs   =   168,994
+Number of PSUs   = 3,109           Population size = 844,970.1
+                                   Design df       =     3,108
+
+--------------------------------------------------------------
+             |             Linearized            Logit
+             | Proportion   std. err.     [95% conf. interval]
+-------------+------------------------------------------------
+     amputot |
+          0  |   .9975798   .0001256      .9973206     .997814
+          1  |   .0024202   .0001256       .002186    .0026794
+--------------------------------------------------------------
+(running proportion on estimation sample)
+
+Survey: Proportion estimation
+
+Number of strata =     1          Number of obs   =    162,166
+Number of PSUs   = 2,936          Population size = 810,830.13
+                                  Design df       =      2,935
+
+--------------------------------------------------------------
+             |             Linearized            Logit
+             | Proportion   std. err.     [95% conf. interval]
+-------------+------------------------------------------------
+     amputot |
+          0  |   .9976506   .0001265      .9973889    .9978861
+          1  |   .0023494   .0001265      .0021139    .0026111
+--------------------------------------------------------------
+(running proportion on estimation sample)
+
+Survey: Proportion estimation
+
+Number of strata =     1           Number of obs   =   228,889
+Number of PSUs   = 3,862           Population size = 1,144,445
+                                   Design df       =     3,861
+
+--------------------------------------------------------------
+             |             Linearized            Logit
+             | Proportion   std. err.     [95% conf. interval]
+-------------+------------------------------------------------
+     amputot |
+          0  |   .9967408    .000137      .9964608    .9969987
+          1  |   .0032592    .000137      .0030013    .0035392
+--------------------------------------------------------------
+(running proportion on estimation sample)
+
+Survey: Proportion estimation
+
+Number of strata =     1          Number of obs   =      6,828
+Number of PSUs   = 1,779          Population size = 34,139.968
+                                  Design df       =      1,778
+
+--------------------------------------------------------------
+             |             Linearized            Logit
+             | Proportion   std. err.     [95% conf. interval]
+-------------+------------------------------------------------
+     amputot |
+          0  |   .9958992   .0007584       .994108    .9971474
+          1  |   .0041008   .0007584      .0028526     .005892
+--------------------------------------------------------------
+(running proportion on estimation sample)
+
+Survey: Proportion estimation
+
+Number of strata =     1           Number of obs   =   384,227
+Number of PSUs   = 3,988           Population size = 1,921,135
+                                   Design df       =     3,987
+
+--------------------------------------------------------------
+             |             Linearized            Logit
+             | Proportion   std. err.     [95% conf. interval]
+-------------+------------------------------------------------
+     amputot |
+          0  |   .9971397   .0000999       .996937    .9973291
+          1  |   .0028603   .0000999      .0026709     .003063
+--------------------------------------------------------------
+
+. 
+. *Adding in comorbidities
+. svy: glm amputot i.allPAD age i.race i.male i.zipinc_qrtl_2 elix , fam(bin) link(log) nolog eform
+(running glm on estimation sample)
+
+Survey: Generalized linear models
+
+Number of strata =     1                           Number of obs   =   391,055
+Number of PSUs   = 3,988                           Population size = 1,955,275
+                                                   Design df       =     3,987
+
+--------------------------------------------------------------------------------------------
+                           |             Linearized
+                   amputot |     exp(b)   std. err.      t    P>|t|     [95% conf. interval]
+---------------------------+----------------------------------------------------------------
+                  1.allPAD |   23.91278   2.355577    32.23   0.000     19.71311    29.00714
+                       age |   .9696766   .0013023   -22.93   0.000     .9671268    .9722331
+                           |
+                      race |
+                    Black  |   1.748074   .1300495     7.51   0.000     1.510827    2.022576
+                 Hispanic  |   1.295145   .1250178     2.68   0.007     1.071837    1.564978
+Asian or Pacific Islander  |   1.160091   .2841455     0.61   0.544     .7176963    1.875182
+          Native American  |   2.196914   .5198924     3.33   0.001     1.381395    3.493882
+                    Other  |   1.161374   .2164327     0.80   0.422     .8059248    1.673591
+                           |
+                    1.male |   2.888252   .2060569    14.87   0.000     2.511246    3.321857
+                           |
+             zipinc_qrtl_2 |
+                        2  |   .8508471   .0565373    -2.43   0.015     .7469191     .969236
+                        5  |   1.085644   .2018769     0.44   0.659      .753976    1.563211
+                           |
+                      elix |   1.051771   .0139496     3.81   0.000     1.024774    1.079478
+                     _cons |   .0067821   .0007907   -42.83   0.000     .0053964    .0085237
+--------------------------------------------------------------------------------------------
+
+. 
+. ******************
+. ******************
+. *Sensitivity analysis 2: Making categorical PAD
+. gen catPAD = 0
+
+. replace catPAD = 1 if IC == 1 & RP == 0 & UG == 0
+(134 real changes made)
+
+. replace catPAD = 2 if IC==0 & RP == 1 & UG == 0
+(47 real changes made)
+
+. replace catPAD = 3 if IC==0 & RP ==0 & UG == 1 
+(883 real changes made)
+
+. 
+. gen IC_2 = 0
+
+. replace IC_2 =1 if catPAD==1
+(134 real changes made)
+
+. gen RP_2=0
+
+. replace RP_2=1 if catPAD==2
+(47 real changes made)
+
+. gen CLI_2=0
+
+. replace CLI_2=1 if catPAD==3
+(883 real changes made)
+
+. 
+. *Logistic Regression with In-Hospital Mortality
+. *Count tables
+. svy: tabulate died catPAD , count format(%20.10f)
+(running tabulate on estimation sample)
+
+Number of strata =     1                           Number of obs   =   391,055
+Number of PSUs   = 3,988                           Population size = 1,955,275
+                                                   Design df       =     3,987
+
+----------------------------------------------------------------------------------------------------------
+Died  |
+durin |
+g     |
+hospi |
+taliz |                                               catPAD                                              
+ation |                  0                   1                   2                   3               Total
+------+---------------------------------------------------------------------------------------------------
+    0 | 1752460.0428722033      575.0013849000      169.9998104000     3785.0015241000  1756990.0455916033
+    1 |  197495.0290181952       95.0001982000       65.0001322000      630.0011568000   198285.0305053952
+      | 
+Total | 1949955.0718903984      670.0015831000      234.9999426000     4415.0026809000  1955275.0760959464
+----------------------------------------------------------------------------------------------------------
+Key: Weighted count
+
+  Pearson:
+    Uncorrected   chi2(3)         =   34.8135
+    Design-based  F(2.98, 11876.40)=   12.1498    P = 0.0000
+
+. foreach var of varlist IC_2 RP_2 CLI_2 {
+  2.         svy: prop died if `var'==1
+  3.         svy: prop died if `var'==0
+  4. }
+(running proportion on estimation sample)
+
+Survey: Proportion estimation
+
+Number of strata =   1            Number of obs   =        134
+Number of PSUs   = 116            Population size = 670.001583
+                                  Design df       =        115
+
+--------------------------------------------------------------
+             |             Linearized            Logit
+             | Proportion   std. err.     [95% conf. interval]
+-------------+------------------------------------------------
+        died |
+          0  |    .858209   .0293826      .7895482    .9071045
+          1  |    .141791   .0293826      .0928955    .2104518
+--------------------------------------------------------------
+(running proportion on estimation sample)
+
+Survey: Proportion estimation
+
+Number of strata =     1           Number of obs   =   390,921
+Number of PSUs   = 3,988           Population size = 1,954,605
+                                   Design df       =     3,987
+
+--------------------------------------------------------------
+             |             Linearized            Logit
+             | Proportion   std. err.     [95% conf. interval]
+-------------+------------------------------------------------
+        died |
+          0  |   .8986035   .0008856       .896854    .9003267
+          1  |   .1013965   .0008856      .0996733     .103146
+--------------------------------------------------------------
+(running proportion on estimation sample)
+
+Survey: Proportion estimation
+
+Number of strata =  1             Number of obs   =         47
+Number of PSUs   = 45             Population size = 234.999943
+                                  Design df       =         44
+
+--------------------------------------------------------------
+             |             Linearized            Logit
+             | Proportion   std. err.     [95% conf. interval]
+-------------+------------------------------------------------
+        died |
+          0  |   .7234036   .0636734       .579342    .8324014
+          1  |   .2765964   .0636734      .1675986     .420658
+--------------------------------------------------------------
+(running proportion on estimation sample)
+
+Survey: Proportion estimation
+
+Number of strata =     1           Number of obs   =   391,008
+Number of PSUs   = 3,988           Population size = 1,955,040
+                                   Design df       =     3,987
+
+--------------------------------------------------------------
+             |             Linearized            Logit
+             | Proportion   std. err.     [95% conf. interval]
+-------------+------------------------------------------------
+        died |
+          0  |   .8986108    .000886      .8968605    .9003346
+          1  |   .1013892    .000886      .0996654    .1031395
+--------------------------------------------------------------
+(running proportion on estimation sample)
+
+Survey: Proportion estimation
+
+Number of strata =   1            Number of obs   =        883
+Number of PSUs   = 623            Population size = 4,415.0027
+                                  Design df       =        622
+
+--------------------------------------------------------------
+             |             Linearized            Logit
+             | Proportion   std. err.     [95% conf. interval]
+-------------+------------------------------------------------
+        died |
+          0  |   .8573045   .0117709      .8325941     .878898
+          1  |   .1426955   .0117709       .121102    .1674059
+--------------------------------------------------------------
+(running proportion on estimation sample)
+
+Survey: Proportion estimation
+
+Number of strata =     1           Number of obs   =   390,172
+Number of PSUs   = 3,988           Population size = 1,950,860
+                                   Design df       =     3,987
+
+--------------------------------------------------------------
+             |             Linearized            Logit
+             | Proportion   std. err.     [95% conf. interval]
+-------------+------------------------------------------------
+        died |
+          0  |   .8986831   .0008858      .8969332    .9004067
+          1  |   .1013169   .0008858      .0995933    .1030668
+--------------------------------------------------------------
+
+. svy: glm died i.catPAD , fam(bin) link(log) nolog eform
+(running glm on estimation sample)
+
+Survey: Generalized linear models
+
+Number of strata =     1                           Number of obs   =   391,055
+Number of PSUs   = 3,988                           Population size = 1,955,275
+                                                   Design df       =     3,987
+
+------------------------------------------------------------------------------
+             |             Linearized
+        died |     exp(b)   std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+      catPAD |
+          1  |   1.399965   .2883265     1.63   0.102     .9348817    2.096416
+          2  |   2.730958   .6225724     4.41   0.000     1.746662    4.269933
+          3  |   1.408896   .1160343     4.16   0.000      1.19882    1.655784
+             |
+       _cons |   .1012818   .0008855  -261.91   0.000     .0995606    .1030329
+------------------------------------------------------------------------------
+
+. 
+. *Adding in sociodemographic factors
+. *These are the count tables
+. *Use all values from first model
+. svy: glm died i.catPAD age i.race i.male i.zipinc_qrtl_2 , fam(bin) link(log) nolog eform
+(running glm on estimation sample)
+
+Survey: Generalized linear models
+
+Number of strata =     1                           Number of obs   =   391,055
+Number of PSUs   = 3,988                           Population size = 1,955,275
+                                                   Design df       =     3,987
+
+--------------------------------------------------------------------------------------------
+                           |             Linearized
+                      died |     exp(b)   std. err.      t    P>|t|     [95% conf. interval]
+---------------------------+----------------------------------------------------------------
+                    catPAD |
+                        1  |   1.373099    .282711     1.54   0.124     .9170491    2.055944
+                        2  |   2.723436   .6173769     4.42   0.000     1.746221    4.247516
+                        3  |   1.369843   .1125804     3.83   0.000     1.165987    1.609341
+                           |
+                       age |   1.012317   .0004173    29.69   0.000     1.011499    1.013135
+                           |
+                      race |
+                    Black  |   1.109075   .0200991     5.71   0.000     1.070361    1.149189
+                 Hispanic  |   1.038134   .0221088     1.76   0.079     .9956806    1.082397
+Asian or Pacific Islander  |   1.249129    .040877     6.80   0.000     1.171504    1.331898
+          Native American  |   1.257795   .0713804     4.04   0.000     1.125354    1.405823
+                    Other  |   1.265337   .0408612     7.29   0.000     1.187709    1.348038
+                           |
+                    1.male |   1.056425   .0102322     5.67   0.000     1.036553    1.076677
+                           |
+             zipinc_qrtl_2 |
+                        2  |    .963177   .0132028    -2.74   0.006     .9376369    .9894128
+                        5  |    .969342   .0381878    -0.79   0.429     .8972909    1.047179
+                           |
+                     _cons |   .0410136   .0014451   -90.64   0.000      .038276     .043947
+--------------------------------------------------------------------------------------------
+
+. svy: glm died i.catPAD age i.race i.male i.zipinc_qrtl_2 elix , fam(bin) link(log) nolog eform
+(running glm on estimation sample)
+
+Survey: Generalized linear models
+
+Number of strata =     1                           Number of obs   =   391,055
+Number of PSUs   = 3,988                           Population size = 1,955,275
+                                                   Design df       =     3,987
+
+--------------------------------------------------------------------------------------------
+                           |             Linearized
+                      died |     exp(b)   std. err.      t    P>|t|     [95% conf. interval]
+---------------------------+----------------------------------------------------------------
+                    catPAD |
+                        1  |   1.300953   .2674931     1.28   0.201     .8693411    1.946852
+                        2  |   2.576924   .5757508     4.24   0.000      1.66289     3.99337
+                        3  |   1.305997   .1065277     3.27   0.001     1.112987    1.532477
+                           |
+                       age |   1.010467   .0004398    23.93   0.000     1.009605     1.01133
+                           |
+                      race |
+                    Black  |   1.079346     .01968     4.19   0.000     1.041444    1.118628
+                 Hispanic  |   1.039985   .0220554     1.85   0.065     .9976302    1.084137
+Asian or Pacific Islander  |   1.259464   .0424122     6.85   0.000     1.178998    1.345422
+          Native American  |    1.24513   .0715218     3.82   0.000     1.112514    1.393553
+                    Other  |   1.280366   .0419901     7.54   0.000     1.200633    1.365394
+                           |
+                    1.male |   1.069061   .0103115     6.92   0.000     1.049035     1.08947
+                           |
+             zipinc_qrtl_2 |
+                        2  |   .9711129   .0132527    -2.15   0.032     .9454748    .9974463
+                        5  |   .9863715   .0387546    -0.35   0.727     .9132434    1.065355
+                           |
+                      elix |   1.144481   .0030939    49.92   0.000     1.138431    1.150563
+                     _cons |   .0224948   .0008738   -97.69   0.000     .0208453    .0242748
+--------------------------------------------------------------------------------------------
+
+. 
+. ******************
+. ******************
+. *Sensitivity analysis 3: new hospice
+. *Logistic Regression with In-Hospital Mortality
+. svy: tabulate hospice allPAD , count format(%20.10f)
+(running tabulate on estimation sample)
+
+Number of strata =     1                           Number of obs   =   391,055
+Number of PSUs   = 3,988                           Population size = 1,955,275
+                                                   Design df       =     3,987
+
+----------------------------------------------------------------------
+          |                           allPAD                          
+  hospice |                  0                   1               Total
+----------+-----------------------------------------------------------
+        0 | 1640694.9900336079     7455.0074620000  1648149.9974956079
+        1 |  305475.0765760872     1650.0020252000   307125.0786012872
+          | 
+    Total | 1946170.0666096951     9105.0094872000  1955275.0760959464
+----------------------------------------------------------------------
+Key: Weighted count
+
+  Pearson:
+    Uncorrected   chi2(1)         =    8.0549
+    Design-based  F(1, 3987)      =    7.9191     P = 0.0049
+
+. svy: glm hospice i.allPAD , fam(bin) link(log) nolog eform
+(running glm on estimation sample)
+
+Survey: Generalized linear models
+
+Number of strata =     1                           Number of obs   =   391,055
+Number of PSUs   = 3,988                           Population size = 1,955,275
+                                                   Design df       =     3,987
+
+------------------------------------------------------------------------------
+             |             Linearized
+     hospice |     exp(b)   std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+    1.allPAD |    1.15454   .0581632     2.85   0.004     1.045958    1.274394
+       _cons |   .1569622   .0011407  -254.80   0.000     .1547416    .1592146
+------------------------------------------------------------------------------
+
+. 
+. *Adding in sociodemographic factors
+. svy: mean age if hospice ==1
+(running mean on estimation sample)
+
+Survey: Mean estimation
+
+Number of strata =     1          Number of obs   =     61,425
+Number of PSUs   = 3,047          Population size = 307,125.08
+                                  Design df       =      3,046
+
+--------------------------------------------------------------
+             |             Linearized
+             |       Mean   std. err.     [95% conf. interval]
+-------------+------------------------------------------------
+         age |   72.78143   .1207471      72.54467    73.01818
+--------------------------------------------------------------
+
+. svy: mean age if hospice ==0
+(running mean on estimation sample)
+
+Survey: Mean estimation
+
+Number of strata =     1           Number of obs   =   329,630
+Number of PSUs   = 3,966           Population size = 1,648,150
+                                   Design df       =     3,965
+
+--------------------------------------------------------------
+             |             Linearized
+             |       Mean   std. err.     [95% conf. interval]
+-------------+------------------------------------------------
+         age |   68.08304   .0912928      67.90405    68.26202
+--------------------------------------------------------------
+
+. svy: mean elix if hospice==1
+(running mean on estimation sample)
+
+Survey: Mean estimation
+
+Number of strata =     1          Number of obs   =     61,425
+Number of PSUs   = 3,047          Population size = 307,125.08
+                                  Design df       =      3,046
+
+--------------------------------------------------------------
+             |             Linearized
+             |       Mean   std. err.     [95% conf. interval]
+-------------+------------------------------------------------
+        elix |   5.663981   .0187166      5.627282    5.700679
+--------------------------------------------------------------
+
+. svy: mean elix if hospice==0
+(running mean on estimation sample)
+
+Survey: Mean estimation
+
+Number of strata =     1           Number of obs   =   329,630
+Number of PSUs   = 3,966           Population size = 1,648,150
+                                   Design df       =     3,965
+
+--------------------------------------------------------------
+             |             Linearized
+             |       Mean   std. err.     [95% conf. interval]
+-------------+------------------------------------------------
+        elix |   4.904709   .0119297       4.88132    4.928097
+--------------------------------------------------------------
+
+. foreach var of varlist race male zipinc_qrtl_2 {
+  2.         svy: tab `var' hospice,  count format(%20.10f)
+  3. }
+(running tabulate on estimation sample)
+
+Number of strata =     1                           Number of obs   =   391,055
+Number of PSUs   = 3,988                           Population size = 1,955,275
+                                                   Design df       =     3,987
+
+----------------------------------------------------------------------
+Race      |                          hospice                          
+(uniform) |                  0                   1               Total
+----------+-----------------------------------------------------------
+    White | 1155239.9493018943   215445.0437164862  1370684.9930183806
+    Black |  230320.0864044198    42975.0299800018   273295.1163844216
+ Hispanic |  165864.9889012807    28410.0042665998   194274.9931678805
+ Asian or |   43494.9727256980     9639.9967442000    53134.9694698980
+ Native A |   12129.9827094002     2165.0014889000    14294.9841983002
+    Other |   41100.0174535992     8490.0024050000    49590.0198585992
+          | 
+    Total | 1648149.9974962920   307125.0786011878  1955275.0760959464
+----------------------------------------------------------------------
+Key: Weighted count
+
+  Pearson:
+    Uncorrected   chi2(5)         =   97.7369
+    Design-based  F(4.92, 19615.49)=   12.6540    P = 0.0000
+(running tabulate on estimation sample)
+
+Number of strata =     1                           Number of obs   =   391,055
+Number of PSUs   = 3,988                           Population size = 1,955,275
+                                                   Design df       =     3,987
+
+----------------------------------------------------------------------
+          |                          hospice                          
+     male |                  0                   1               Total
+----------+-----------------------------------------------------------
+        0 |  817370.0110733879   151895.0596148836   969265.0706882714
+        1 |  830779.9864222497   155230.0189862820   986010.0054085318
+          | 
+    Total | 1648149.9974956375   307125.0786011656  1955275.0760959464
+----------------------------------------------------------------------
+Key: Weighted count
+
+  Pearson:
+    Uncorrected   chi2(1)         =    0.3837
+    Design-based  F(1, 3987)      =    0.3617     P = 0.5476
+(running tabulate on estimation sample)
+
+Number of strata =     1                           Number of obs   =   391,055
+Number of PSUs   = 3,988                           Population size = 1,955,275
+                                                   Design df       =     3,987
+
+----------------------------------------------------------------------
+zipinc_qr |                          hospice                          
+tl_2      |                  0                   1               Total
+----------+-----------------------------------------------------------
+        1 |  939384.9378497413   170920.0425624911  1110304.9804122322
+        2 |  679385.0911001402   131445.0370105881   810830.1281107282
+        5 |   29379.9685457001     4759.9990281000    34139.9675738001
+          | 
+    Total | 1648149.9974955816   307125.0786011792  1955275.0760959464
+----------------------------------------------------------------------
+Key: Weighted count
+
+  Pearson:
+    Uncorrected   chi2(2)         =   63.6207
+    Design-based  F(1.85, 7379.71)=   19.8115     P = 0.0000
+
+. foreach var of varlist allPAD white black hispanic asian native race_other male zipinc_qrtl_0_50 zipinc_
+> qrtl_50_100 zipinc_qrtl_miss {
+  2.         svy: prop hospice if `var'==1
+  3.         svy: prop hospice if `var'==0
+  4. } 
+(running proportion on estimation sample)
+
+Survey: Proportion estimation
+
+Number of strata =     1          Number of obs   =      1,821
+Number of PSUs   = 1,041          Population size = 9,105.0095
+                                  Design df       =      1,040
+
+--------------------------------------------------------------
+             |             Linearized            Logit
+             | Proportion   std. err.     [95% conf. interval]
+-------------+------------------------------------------------
+     hospice |
+          0  |   .8187809   .0091643      .8000994    .8360742
+          1  |   .1812191   .0091643      .1639258    .1999006
+--------------------------------------------------------------
+(running proportion on estimation sample)
+
+Survey: Proportion estimation
+
+Number of strata =     1           Number of obs   =   389,234
+Number of PSUs   = 3,987           Population size = 1,946,170
+                                   Design df       =     3,986
+
+--------------------------------------------------------------
+             |             Linearized            Logit
+             | Proportion   std. err.     [95% conf. interval]
+-------------+------------------------------------------------
+     hospice |
+          0  |   .8430378   .0011407      .8407884    .8452613
+          1  |   .1569622   .0011407      .1547387    .1592116
+--------------------------------------------------------------
+(running proportion on estimation sample)
+
+Survey: Proportion estimation
+
+Number of strata =     1           Number of obs   =   274,137
+Number of PSUs   = 3,874           Population size = 1,370,685
+                                   Design df       =     3,873
+
+--------------------------------------------------------------
+             |             Linearized            Logit
+             | Proportion   std. err.     [95% conf. interval]
+-------------+------------------------------------------------
+     hospice |
+          0  |   .8428194   .0012722      .8403091    .8452976
+          1  |   .1571806   .0012722      .1547024    .1596909
+--------------------------------------------------------------
+(running proportion on estimation sample)
+
+Survey: Proportion estimation
+
+Number of strata =     1          Number of obs   =    116,918
+Number of PSUs   = 2,972          Population size = 584,590.08
+                                  Design df       =      2,971
+
+--------------------------------------------------------------
+             |             Linearized            Logit
+             | Proportion   std. err.     [95% conf. interval]
+-------------+------------------------------------------------
+     hospice |
+          0  |   .8431721   .0015971       .840015    .8462783
+          1  |   .1568279   .0015971      .1537217     .159985
+--------------------------------------------------------------
+(running proportion on estimation sample)
+
+Survey: Proportion estimation
+
+Number of strata =     1          Number of obs   =     54,659
+Number of PSUs   = 2,411          Population size = 273,295.12
+                                  Design df       =      2,410
+
+--------------------------------------------------------------
+             |             Linearized            Logit
+             | Proportion   std. err.     [95% conf. interval]
+-------------+------------------------------------------------
+     hospice |
+          0  |   .8427523   .0022356      .8383186    .8470866
+          1  |   .1572477   .0022356      .1529134    .1616814
+--------------------------------------------------------------
+(running proportion on estimation sample)
+
+Survey: Proportion estimation
+
+Number of strata =     1           Number of obs   =   336,396
+Number of PSUs   = 3,965           Population size = 1,681,980
+                                   Design df       =     3,964
+
+--------------------------------------------------------------
+             |             Linearized            Logit
+             | Proportion   std. err.     [95% conf. interval]
+-------------+------------------------------------------------
+     hospice |
+          0  |   .8429529   .0011748      .8406359    .8452424
+          1  |   .1570471   .0011748      .1547576    .1593641
+--------------------------------------------------------------
+(running proportion on estimation sample)
+
+Survey: Proportion estimation
+
+Number of strata =     1          Number of obs   =     38,855
+Number of PSUs   = 2,040          Population size = 194,274.99
+                                  Design df       =      2,039
+
+--------------------------------------------------------------
+             |             Linearized            Logit
+             | Proportion   std. err.     [95% conf. interval]
+-------------+------------------------------------------------
+     hospice |
+          0  |    .853764   .0023614       .849072    .8583344
+          1  |    .146236   .0023614      .1416656     .150928
+--------------------------------------------------------------
+(running proportion on estimation sample)
+
+Survey: Proportion estimation
+
+Number of strata =     1           Number of obs   =   352,200
+Number of PSUs   = 3,960           Population size = 1,761,000
+                                   Design df       =     3,959
+
+--------------------------------------------------------------
+             |             Linearized            Logit
+             | Proportion   std. err.     [95% conf. interval]
+-------------+------------------------------------------------
+     hospice |
+          0  |   .8417291   .0011897      .8393826    .8440477
+          1  |   .1582709   .0011897      .1559523    .1606174
+--------------------------------------------------------------
+(running proportion on estimation sample)
+
+Survey: Proportion estimation
+
+Number of strata =     1          Number of obs   =     10,627
+Number of PSUs   = 1,400          Population size = 53,134.969
+                                  Design df       =      1,399
+
+--------------------------------------------------------------
+             |             Linearized            Logit
+             | Proportion   std. err.     [95% conf. interval]
+-------------+------------------------------------------------
+     hospice |
+          0  |   .8185753    .004379      .8098265    .8270076
+          1  |   .1814247    .004379      .1729924    .1901735
+--------------------------------------------------------------
+(running proportion on estimation sample)
+
+Survey: Proportion estimation
+
+Number of strata =     1           Number of obs   =   380,428
+Number of PSUs   = 3,987           Population size = 1,902,140
+                                   Design df       =     3,986
+
+--------------------------------------------------------------
+             |             Linearized            Logit
+             | Proportion   std. err.     [95% conf. interval]
+-------------+------------------------------------------------
+     hospice |
+          0  |   .8436051   .0011488      .8413396    .8458441
+          1  |   .1563949   .0011488      .1541559    .1586604
+--------------------------------------------------------------
+(running proportion on estimation sample)
+
+Survey: Proportion estimation
+
+Number of strata =   1            Number of obs   =      2,859
+Number of PSUs   = 708            Population size = 14,294.984
+                                  Design df       =        707
+
+--------------------------------------------------------------
+             |             Linearized            Logit
+             | Proportion   std. err.     [95% conf. interval]
+-------------+------------------------------------------------
+     hospice |
+          0  |   .8485482   .0078972      .8323832      .86341
+          1  |   .1514518   .0078972        .13659    .1676168
+--------------------------------------------------------------
+(running proportion on estimation sample)
+
+Survey: Proportion estimation
+
+Number of strata =     1           Number of obs   =   388,196
+Number of PSUs   = 3,981           Population size = 1,940,980
+                                   Design df       =     3,980
+
+--------------------------------------------------------------
+             |             Linearized            Logit
+             | Proportion   std. err.     [95% conf. interval]
+-------------+------------------------------------------------
+     hospice |
+          0  |   .8428835   .0011442      .8406272    .8451136
+          1  |   .1571165   .0011442      .1548864    .1593728
+--------------------------------------------------------------
+(running proportion on estimation sample)
+
+Survey: Proportion estimation
+
+Number of strata =     1           Number of obs   =     9,918
+Number of PSUs   = 1,384           Population size = 49,590.02
+                                   Design df       =     1,383
+
+--------------------------------------------------------------
+             |             Linearized            Logit
+             | Proportion   std. err.     [95% conf. interval]
+-------------+------------------------------------------------
+     hospice |
+          0  |   .8287961   .0048823       .819005    .8381623
+          1  |   .1712039   .0048823      .1618377     .180995
+--------------------------------------------------------------
+(running proportion on estimation sample)
+
+Survey: Proportion estimation
+
+Number of strata =     1           Number of obs   =   381,137
+Number of PSUs   = 3,967           Population size = 1,905,685
+                                   Design df       =     3,966
+
+--------------------------------------------------------------
+             |             Linearized            Logit
+             | Proportion   std. err.     [95% conf. interval]
+-------------+------------------------------------------------
+     hospice |
+          0  |   .8432925   .0011452      .8410341    .8455247
+          1  |   .1567075   .0011452      .1544753    .1589659
+--------------------------------------------------------------
+(running proportion on estimation sample)
+
+Survey: Proportion estimation
+
+Number of strata =     1          Number of obs   =    197,202
+Number of PSUs   = 3,774          Population size = 986,010.01
+                                  Design df       =      3,773
+
+--------------------------------------------------------------
+             |             Linearized            Logit
+             | Proportion   std. err.     [95% conf. interval]
+-------------+------------------------------------------------
+     hospice |
+          0  |   .8425675   .0012627       .840076    .8450274
+          1  |   .1574325   .0012627      .1549726     .159924
+--------------------------------------------------------------
+(running proportion on estimation sample)
+
+Survey: Proportion estimation
+
+Number of strata =     1          Number of obs   =    193,853
+Number of PSUs   = 3,818          Population size = 969,265.07
+                                  Design df       =      3,817
+
+--------------------------------------------------------------
+             |             Linearized            Logit
+             | Proportion   std. err.     [95% conf. interval]
+-------------+------------------------------------------------
+     hospice |
+          0  |   .8432884   .0013137      .8406955    .8458469
+          1  |   .1567116   .0013137      .1541531    .1593045
+--------------------------------------------------------------
+(running proportion on estimation sample)
+
+Survey: Proportion estimation
+
+Number of strata =     1           Number of obs   =   222,061
+Number of PSUs   = 3,839           Population size = 1,110,305
+                                   Design df       =     3,838
+
+--------------------------------------------------------------
+             |             Linearized            Logit
+             | Proportion   std. err.     [95% conf. interval]
+-------------+------------------------------------------------
+     hospice |
+          0  |   .8460603   .0013617      .8433716    .8487111
+          1  |   .1539397   .0013617      .1512889    .1566284
+--------------------------------------------------------------
+(running proportion on estimation sample)
+
+Survey: Proportion estimation
+
+Number of strata =     1           Number of obs   =   168,994
+Number of PSUs   = 3,109           Population size = 844,970.1
+                                   Design df       =     3,108
+
+--------------------------------------------------------------
+             |             Linearized            Logit
+             | Proportion   std. err.     [95% conf. interval]
+-------------+------------------------------------------------
+     hospice |
+          0  |   .8388049   .0014707      .8359004    .8416677
+          1  |   .1611951   .0014707      .1583323    .1640996
+--------------------------------------------------------------
+(running proportion on estimation sample)
+
+Survey: Proportion estimation
+
+Number of strata =     1          Number of obs   =    162,166
+Number of PSUs   = 2,936          Population size = 810,830.13
+                                  Design df       =      2,935
+
+--------------------------------------------------------------
+             |             Linearized            Logit
+             | Proportion   std. err.     [95% conf. interval]
+-------------+------------------------------------------------
+     hospice |
+          0  |   .8378883   .0015034      .8349189    .8408145
+          1  |   .1621117   .0015034      .1591855    .1650811
+--------------------------------------------------------------
+(running proportion on estimation sample)
+
+Survey: Proportion estimation
+
+Number of strata =     1           Number of obs   =   228,889
+Number of PSUs   = 3,862           Population size = 1,144,445
+                                   Design df       =     3,861
+
+--------------------------------------------------------------
+             |             Linearized            Logit
+             | Proportion   std. err.     [95% conf. interval]
+-------------+------------------------------------------------
+     hospice |
+          0  |   .8464932   .0013535      .8438207    .8491282
+          1  |   .1535068   .0013535      .1508718    .1561793
+--------------------------------------------------------------
+(running proportion on estimation sample)
+
+Survey: Proportion estimation
+
+Number of strata =     1          Number of obs   =      6,828
+Number of PSUs   = 1,779          Population size = 34,139.968
+                                  Design df       =      1,778
+
+--------------------------------------------------------------
+             |             Linearized            Logit
+             | Proportion   std. err.     [95% conf. interval]
+-------------+------------------------------------------------
+     hospice |
+          0  |    .860574   .0046153      .8512735    .8693822
+          1  |    .139426   .0046153      .1306178    .1487265
+--------------------------------------------------------------
+(running proportion on estimation sample)
+
+Survey: Proportion estimation
+
+Number of strata =     1           Number of obs   =   384,227
+Number of PSUs   = 3,988           Population size = 1,921,135
+                                   Design df       =     3,987
+
+--------------------------------------------------------------
+             |             Linearized            Logit
+             | Proportion   std. err.     [95% conf. interval]
+-------------+------------------------------------------------
+     hospice |
+          0  |   .8426112   .0011442      .8403549    .8448416
+          1  |   .1573888   .0011442      .1551584    .1596451
+--------------------------------------------------------------
+
+. svy: glm hospice i.allPAD age i.race i.male i.zipinc_qrtl_2 , fam(bin) link(log) nolog eform
+(running glm on estimation sample)
+
+Survey: Generalized linear models
+
+Number of strata =     1                           Number of obs   =   391,055
+Number of PSUs   = 3,988                           Population size = 1,955,275
+                                                   Design df       =     3,987
+
+--------------------------------------------------------------------------------------------
+                           |             Linearized
+                   hospice |     exp(b)   std. err.      t    P>|t|     [95% conf. interval]
+---------------------------+----------------------------------------------------------------
+                  1.allPAD |   1.112957   .0560329     2.13   0.034     1.008349    1.228418
+                       age |   1.018968   .0003668    52.19   0.000     1.018249    1.019688
+                           |
+                      race |
+                    Black  |    1.11923   .0166225     7.58   0.000      1.08711    1.152298
+                 Hispanic  |   1.015804   .0174944     0.91   0.363     .9820774    1.050688
+Asian or Pacific Islander  |   1.142898   .0274703     5.56   0.000      1.09029    1.198044
+          Native American  |   1.144101   .0598118     2.58   0.010     1.032646    1.267586
+                    Other  |   1.140215   .0328464     4.55   0.000     1.077602    1.206465
+                           |
+                    1.male |   1.034394   .0077876     4.49   0.000     1.019239    1.049776
+                           |
+             zipinc_qrtl_2 |
+                        2  |   1.003927   .0110168     0.36   0.721      .982559     1.02576
+                        5  |   .9483348   .0303169    -1.66   0.097     .8907211    1.009675
+                           |
+                     _cons |   .0396832   .0012294  -104.16   0.000     .0373446    .0421683
+--------------------------------------------------------------------------------------------
+
+. 
+. *Adding in comorbidities
+. svy: glm hospice i.allPAD age i.race i.male i.zipinc_qrtl_2 elix, fam(bin) link(log) nolog eform
+(running glm on estimation sample)
+an error occurred when svy executed glm
+--Break--
+r(1);
+
+end of do-file
+
+--Break--
+r(1);
+
+. do "/var/folders/p1/7cgjkzw95kv30_bk198wcbc40000gn/T//SD00429.000000"
+
+. *Adding in comorbidities
+. *svy: glm hospice i.allPAD age i.race i.male i.zipinc_qrtl_2 elix, fam(bin) link(log) nolog eform
+. *Glm model did not converge, so used logistic and found the risk ratios
+. svy: mlogit hospice i.allPAD age i.race male i.zipinc_qrtl_2 elix, rrr
+(running mlogit on estimation sample)
+
+Survey: Multinomial logistic regression
+
+Number of strata =     1                           Number of obs   =   391,055
+Number of PSUs   = 3,988                           Population size = 1,955,275
+                                                   Design df       =     3,987
+                                                   F(11, 3977)     =    530.71
+                                                   Prob > F        =    0.0000
+
+--------------------------------------------------------------------------------------------
+                           |             Linearized
+                   hospice |        RRR   std. err.      t    P>|t|     [95% conf. interval]
+---------------------------+----------------------------------------------------------------
+0                          |  (base outcome)
+---------------------------+----------------------------------------------------------------
+1                          |
+                  1.allPAD |   1.089203    .067755     1.37   0.170     .9641459     1.23048
+                       age |   1.020732   .0004499    46.56   0.000      1.01985    1.021614
+                           |
+                      race |
+                    Black  |    1.10155   .0198779     5.36   0.000     1.063259    1.141219
+                 Hispanic  |   1.018395   .0209372     0.89   0.375     .9781631    1.060283
+Asian or Pacific Islander  |   1.188229    .037529     5.46   0.000     1.116883    1.264132
+          Native American  |   1.166982   .0758116     2.38   0.017     1.027425    1.325495
+                    Other  |   1.193721   .0435566     4.85   0.000     1.111309    1.282245
+                           |
+                      male |   1.055061   .0096184     5.88   0.000     1.036372    1.074088
+                           |
+             zipinc_qrtl_2 |
+                        2  |   1.011574   .0132377     0.88   0.379     .9859506    1.037863
+                        5  |   .9529425   .0358594    -1.28   0.200     .8851687    1.025905
+                           |
+                      elix |   1.171389   .0032112    57.70   0.000      1.16511    1.177702
+                     _cons |   .0179116   .0007048  -102.22   0.000     .0165817    .0193481
+--------------------------------------------------------------------------------------------
+Note: _cons estimates baseline relative risk for each outcome.
+
+. 
+end of do-file
+
+. do "/var/folders/p1/7cgjkzw95kv30_bk198wcbc40000gn/T//SD00429.000000"
+
+. log close
+      name:  <unnamed>
+       log:  /Users/Stuthi/Documents/Stuthi/Year 2 Pitt MPH/Work-Related/CLI:Sepsis /Log Binomial Regressi
+> on.log
+  log type:  text
+ closed on:  16 Apr 2023, 13:42:25
+----------------------------------------------------------------------------------------------------------
