@@ -1,0 +1,622 @@
+---------------------------------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  /Users/stuthiiyer/Documents/Stuthi/Year 2 Pitt MPH/Work-Related/CLI:Sepsis /Cohort Def 2016.
+> log
+  log type:  text
+ opened on:  18 Sep 2024, 13:32:38
+
+. 
+end of do-file
+
+. do "/var/folders/4t/jk7v7swn6j518nd6g3tykdyh0000gn/T//SD02583.000000"
+
+. svyset hosp_nis [pw=discwt]
+
+Sampling weights: discwt
+             VCE: linearized
+     Single unit: missing
+        Strata 1: <one>
+ Sampling unit 1: hosp_nis
+           FPC 1: <zero>
+
+. 
+. *Get overall age, sex, race data
+. gen male = 0
+
+. replace male = 1 if female==0
+(3,086,070 real changes made)
+
+. 
+. svy: mean age
+(running mean on estimation sample)
+
+Survey: Mean estimation
+
+Number of strata =     1          Number of obs   =  7,133,668
+Number of PSUs   = 4,575          Population size = 35,668,311
+                                  Design df       =      4,574
+
+--------------------------------------------------------------
+             |             Linearized
+             |       Mean   std. err.     [95% conf. interval]
+-------------+------------------------------------------------
+         age |   49.00217   .2031046      48.60399    49.40036
+--------------------------------------------------------------
+
+. svy: proportion male
+(running proportion on estimation sample)
+
+Survey: Proportion estimation
+
+Number of strata =     1          Number of obs   =  7,135,090
+Number of PSUs   = 4,575          Population size = 35,675,421
+                                  Design df       =      4,574
+
+--------------------------------------------------------------
+             |             Linearized            Logit
+             | Proportion   std. err.     [95% conf. interval]
+-------------+------------------------------------------------
+        male |
+          0  |   .5674798   .0011073      .5653077    .5696494
+          1  |   .4325202   .0011073      .4303506    .4346923
+--------------------------------------------------------------
+
+. svy: proportion race
+(running proportion on estimation sample)
+
+Survey: Proportion estimation
+
+Number of strata =     1          Number of obs   =  6,767,979
+Number of PSUs   = 4,348          Population size = 33,839,864
+                                  Design df       =      4,347
+
+--------------------------------------------------------------
+             |             Linearized            Logit
+             | Proportion   std. err.     [95% conf. interval]
+-------------+------------------------------------------------
+        race |
+          1  |    .653937   .0054653      .6431455    .6645724
+          2  |   .1520849   .0035283       .145296    .1591319
+          3  |   .1226695   .0039636      .1151082    .1306542
+          4  |   .0306464   .0014097      .0280002     .033534
+          5  |   .0064925   .0005072      .0055701    .0075665
+          6  |   .0341697   .0016681      .0310462    .0375953
+--------------------------------------------------------------
+
+. 
+. *Making explicit sepsis
+. gen explicitsepsis = 0
+
+.         replace explicitsepsis = 1 if i10_dx1==("R6520") | i10_dx1==("R6521")
+(2,967 real changes made)
+
+. 
+. **********************************************
+. * Making implicit sepsis 
+. gen allsepsis = 0
+
+.         replace allsepsis = 1 if i10_dx1==("A001") |i10_dx1==("A009") |i10_dx1==("A0100") |i10_dx1==("A
+> 011") |i10_dx1==("A012") |i10_dx1==("A013") |i10_dx1==("A014") |i10_dx1==("A020") |i10_dx1==("A0220") |
+> i10_dx1==("A0221") |i10_dx1==("A0222") |i10_dx1==("A0223") |i10_dx1==("A0224") |i10_dx1==("A0229") |i10
+> _dx1==("A028") |i10_dx1==("A029") |i10_dx1==("A030") |i10_dx1==("A031") |i10_dx1==("A032") |i10_dx1==("
+> A033") |i10_dx1==("A038") |i10_dx1==("A039") |i10_dx1==("A040") |i10_dx1==("A041") |i10_dx1==("A042") |
+> i10_dx1==("A043") |i10_dx1==("A044") |i10_dx1==("A044") |i10_dx1==("A045") |i10_dx1==("A046") |i10_dx1=
+> =("A0471") |i10_dx1==("A0472") |i10_dx1==("A048") |i10_dx1==("A048") |i10_dx1==("A048") |i10_dx1==("A04
+> 8") |i10_dx1==("A048") |i10_dx1==("A049") |i10_dx1==("A049") |i10_dx1==("A050") |i10_dx1==("A051") |i10
+> _dx1==("A052") |i10_dx1==("A053") |i10_dx1==("A054") |i10_dx1==("A055") |i10_dx1==("A058") |i10_dx1==("
+> A059") |i10_dx1==("A080") |i10_dx1==("A0811") |i10_dx1==("A0819") |i10_dx1==("A082") |i10_dx1==("A0831"
+> ) |i10_dx1==("A0832") |i10_dx1==("A0839") |i10_dx1==("A088") |i10_dx1==("A09") |i10_dx1==("A170") |i10_
+> dx1==("A171") |i10_dx1==("A1781") |i10_dx1==("A1782") |i10_dx1==("A1789") |i10_dx1==("A179") |i10_dx1==
+> ("A192") |i10_dx1==("A198") |i10_dx1==("A199") |i10_dx1==("A200") |i10_dx1==("A201") |i10_dx1==("A202")
+>  |i10_dx1==("A207") |i10_dx1==("A208") |i10_dx1==("A209") |i10_dx1==("A210") |i10_dx1==("A211") |i10_dx
+> 1==("A212") |i10_dx1==("A213") |i10_dx1==("A217") |i10_dx1==("A218") |i10_dx1==("A219") |i10_dx1==("A22
+> 0") |i10_dx1==("A221") |i10_dx1==("A222") |i10_dx1==("A228") |i10_dx1==("A229") |i10_dx1==("A230") |i10
+> _dx1==("A231") |i10_dx1==("A232") |i10_dx1==("A233") |i10_dx1==("A238") |i10_dx1==("A239") |i10_dx1==("
+> A240") |i10_dx1==("A243") |i10_dx1==("A249") |i10_dx1==("A250") |i10_dx1==("A251") |i10_dx1==("A259") |
+> i10_dx1==("A268") |i10_dx1==("A269") |i10_dx1==("A270") |i10_dx1==("A2781") |i10_dx1==("A2789") |i10_dx
+> 1==("A279") |i10_dx1==("A280") |i10_dx1==("A288") |i10_dx1==("A289") |i10_dx1==("A3211") |i10_dx1==("A3
+> 212") |i10_dx1==("A3281") |i10_dx1==("A3289") |i10_dx1==("A329") |i10_dx1==("A34") |i10_dx1==("A35") |i
+> 10_dx1==("A360") |i10_dx1==("A361") |i10_dx1==("A362") |i10_dx1==("A363") |i10_dx1==("A3681") |i10_dx1=
+> =("A3682") |i10_dx1==("A3683") |i10_dx1==("A3684") |i10_dx1==("A3685") |i10_dx1==("A3686") |i10_dx1==("
+> A3689") |i10_dx1==("A3689") |i10_dx1==("A3689") |i10_dx1==("A369") |i10_dx1==("A3700") |i10_dx1==("A371
+> 0") |i10_dx1==("A3780") |i10_dx1==("A3790") |i10_dx1==("A389") |i10_dx1==("A390") |i10_dx1==("A391") |i
+> 10_dx1==("A394") |i10_dx1==("A3950") |i10_dx1==("A3951") |i10_dx1==("A3952") |i10_dx1==("A3953") |i10_d
+> x1==("A3981") |i10_dx1==("A3982") |i10_dx1==("A3983") |i10_dx1==("A3989") |i10_dx1==("A399") |i10_dx1==
+> ("A420") |i10_dx1==("A421") |i10_dx1==("A422") |i10_dx1==("A4281") |i10_dx1==("A4282") |i10_dx1==("A428
+> 9") |i10_dx1==("A429") |i10_dx1==("A438") |i10_dx1==("A439") |i10_dx1==("A46") |i10_dx1==("A480") |i10_
+> dx1==("A481") |i10_dx1==("A483") |i10_dx1==("A4851") |i10_dx1==("A4852") |i10_dx1==("A488") |i10_dx1==(
+> "A493") |i10_dx1==("A5400") |i10_dx1==("A5401") |i10_dx1==("A5403") |i10_dx1==("A5421") |i10_dx1==("A54
+> 22") |i10_dx1==("A5423") |i10_dx1==("A5423") |i10_dx1==("A5424") |i10_dx1==("A5429") |i10_dx1==("A5429"
+> ) |i10_dx1==("A5431") |i10_dx1==("A5432") |i10_dx1==("A5433") |i10_dx1==("A5439") |i10_dx1==("A5440") |
+> i10_dx1==("A5441") |i10_dx1==("A5442") |i10_dx1==("A5449") |i10_dx1==("A545") |i10_dx1==("A546") |i10_d
+> x1==("A5481") |i10_dx1==("A5483") |i10_dx1==("A5485") |i10_dx1==("A5489") |i10_dx1==("A690") |i10_dx1==
+> ("A691") |i10_dx1==("B370") |i10_dx1==("B371") |i10_dx1==("B371") |i10_dx1==("B372") |i10_dx1==("B373")
+>  |i10_dx1==("B3742") |i10_dx1==("B3749") |i10_dx1==("B375") |i10_dx1==("B375") |i10_dx1==("B376") |i10_
+> dx1==("B376") |i10_dx1==("B377") |i10_dx1==("B3781") |i10_dx1==("B3781") |i10_dx1==("B3782") |i10_dx1==
+> ("B3782") |i10_dx1==("B3783") |i10_dx1==("B3784") |i10_dx1==("B3784") |i10_dx1==("B3789") |i10_dx1==("B
+> 3789") |i10_dx1==("B379") |i10_dx1==("B380") |i10_dx1==("B381") |i10_dx1==("B382") |i10_dx1==("B383") |
+> i10_dx1==("B384") |i10_dx1==("B3889") |i10_dx1==("B389") |i10_dx1==("B39") |i10_dx1==("B40") |i10_dx1==
+> ("B41") |i10_dx1==("B42") |i10_dx1==("B43") |i10_dx1==("B44") |i10_dx1==("B450") |i10_dx1==("B451") |i1
+> 0_dx1==("B457") |i10_dx1==("B459") |i10_dx1==("B469") |i10_dx1==("B470") |i10_dx1==("B471") |i10_dx1==(
+> "B479") |i10_dx1==("B480") |i10_dx1==("B481") |i10_dx1==("B482") |i10_dx1==("B488") |i10_dx1==("B488") 
+> |i10_dx1==("B49") |i10_dx1==("B950") |i10_dx1==("B951") |i10_dx1==("B952") |i10_dx1==("B953") |i10_dx1=
+> =("B954") |i10_dx1==("B955") |i10_dx1==("B9561") |i10_dx1==("B9562") |i10_dx1==("B957") |i10_dx1==("B95
+> 8") |i10_dx1==("B960") |i10_dx1==("B961") |i10_dx1==("B9620") |i10_dx1==("B9621") |i10_dx1==("B9622") |
+> i10_dx1==("B9623") |i10_dx1==("B9629") |i10_dx1==("B963") |i10_dx1==("B964") |i10_dx1==("B965") |i10_dx
+> 1==("B966") |i10_dx1==("B967") |i10_dx1==("B9681") |i10_dx1==("B9689") |i10_dx1==("E832") |i10_dx1==("G
+> 000") |i10_dx1==("G001") |i10_dx1==("G002") |i10_dx1==("G003") |i10_dx1==("G008") |i10_dx1==("G009") |i
+> 10_dx1==("G01") |i10_dx1==("G02") |i10_dx1==("G02") |i10_dx1==("G02") |i10_dx1==("G042") |i10_dx1==("G0
+> 60") |i10_dx1==("G061") |i10_dx1==("G062") |i10_dx1==("G08") |i10_dx1==("H0500") |i10_dx1==("H05019") |
+> i10_dx1==("H05029") |i10_dx1==("H05039") |i10_dx1==("H05049") |i10_dx1==("H0510") |i10_dx1==("H05119") 
+(20,346 real changes made)
+
+.         
+.         replace allsepsis = 1 if i10_dx1==("H05129") |i10_dx1==("H0520") |i10_dx1==("H05219") |i10_dx1=
+> =("H05229") |i10_dx1==("H05239") |i10_dx1==("H05249") |i10_dx1==("H05259") |i10_dx1==("H05269") |i10_dx
+> 1==("H0530") |i10_dx1==("H05319") |i10_dx1==("H05329") |i10_dx1==("H05339") |i10_dx1==("H05349") |i10_d
+> x1==("H05359") |i10_dx1==("H05409") |i10_dx1==("H05419") |i10_dx1==("H05429") |i10_dx1==("H0553") |i10_
+> dx1==("H05819") |i10_dx1==("H05829") |i10_dx1==("H0589") |i10_dx1==("H0589") |i10_dx1==("H0589") |i10_d
+> x1==("H0589") |i10_dx1==("H059") |i10_dx1==("H16249") |i10_dx1==("H32") |i10_dx1==("H33129") |i10_dx1==
+> ("H44009") |i10_dx1==("H44019") |i10_dx1==("H44029") |i10_dx1==("H44119") |i10_dx1==("H44129") |i10_dx1
+> ==("H44139") |i10_dx1==("H4419") |i10_dx1==("H4420") |i10_dx1==("H4421") |i10_dx1==("H4422") |i10_dx1==
+> ("H4423") |i10_dx1==("H442A1") |i10_dx1==("H442A2") |i10_dx1==("H442A3") |i10_dx1==("H442A9") |i10_dx1=
+> =("H442B1") |i10_dx1==("H442B2") |i10_dx1==("H442B3") |i10_dx1==("H442B9") |i10_dx1==("H442C1") |i10_dx
+> 1==("H442C2") |i10_dx1==("H442C3") |i10_dx1==("H442C9") |i10_dx1==("H442D1") |i10_dx1==("H442D2") |i10_
+> dx1==("H442D3") |i10_dx1==("H442D9") |i10_dx1==("H442E1") |i10_dx1==("H442E2") |i10_dx1==("H442E3") |i1
+> 0_dx1==("H442E9") |i10_dx1==("H4430") |i10_dx1==("H44319") |i10_dx1==("H44329") |i10_dx1==("H44399") |i
+> 10_dx1==("H4440") |i10_dx1==("H44419") |i10_dx1==("H44429") |i10_dx1==("H44439") |i10_dx1==("H44449") |
+> i10_dx1==("H4450") |i10_dx1==("H44519") |i10_dx1==("H44529") |i10_dx1==("H44539") |i10_dx1==("H44609") 
+> |i10_dx1==("H44619") |i10_dx1==("H44629") |i10_dx1==("H44639") |i10_dx1==("H44649") |i10_dx1==("H44659"
+> ) |i10_dx1==("H44699") |i10_dx1==("H44709") |i10_dx1==("H44719") |i10_dx1==("H44729") |i10_dx1==("H4473
+> 9") |i10_dx1==("H44749") |i10_dx1==("H44759") |i10_dx1==("H44799") |i10_dx1==("H44819") |i10_dx1==("H44
+> 829") |i10_dx1==("H4489") |i10_dx1==("H449") |i10_dx1==("H6020") |i10_dx1==("I308") |i10_dx1==("I32") |
+> i10_dx1==("I330") |i10_dx1==("I339") |i10_dx1==("I39") |i10_dx1==("I39") |i10_dx1==("J0100") |i10_dx1==
+> ("J0110") |i10_dx1==("J0120") |i10_dx1==("J0130") |i10_dx1==("J0140") |i10_dx1==("J0190") |i10_dx1==("J
+> 020") |i10_dx1==("J029") |i10_dx1==("J0300") |i10_dx1==("J0390") |i10_dx1==("J040") |i10_dx1==("J0410")
+>  |i10_dx1==("J0411") |i10_dx1==("J042") |i10_dx1==("J0430") |i10_dx1==("J0431") |i10_dx1==("J050") |i10
+> _dx1==("J050") |i10_dx1==("J0510") |i10_dx1==("J0511") |i10_dx1==("J060") |i10_dx1==("J069") |i10_dx1==
+> ("J13") |i10_dx1==("J14") |i10_dx1==("J150") |i10_dx1==("J151") |i10_dx1==("J1520") |i10_dx1==("J15211"
+> ) |i10_dx1==("J15212") |i10_dx1==("J1529") |i10_dx1==("J153") |i10_dx1==("J154") |i10_dx1==("J155") |i1
+> 0_dx1==("J156") |i10_dx1==("J158") |i10_dx1==("J158") |i10_dx1==("J159") |i10_dx1==("J17") |i10_dx1==("
+> J180") |i10_dx1==("J181") |i10_dx1==("J189") |i10_dx1==("J36") |i10_dx1==("J441") |i10_dx1==("J471") |i
+> 10_dx1==("J479") |i10_dx1==("J850") |i10_dx1==("J851") |i10_dx1==("J852") |i10_dx1==("J853") |i10_dx1==
+> ("J860") |i10_dx1==("J869") |i10_dx1==("K046") |i10_dx1==("K047") |i10_dx1==("K113") |i10_dx1==("K122")
+>  |i10_dx1==("K122") |i10_dx1==("K352") |i10_dx1==("K353") |i10_dx1==("K3580") |i10_dx1==("K3589") |i10_
+> dx1==("K36") |i10_dx1==("K37") |i10_dx1==("K5712") |i10_dx1==("K5713") |i10_dx1==("K5732") |i10_dx1==("
+> K5733") |i10_dx1==("K610") |i10_dx1==("K611") |i10_dx1==("K613") |i10_dx1==("K630") |i10_dx1==("K631") 
+> |i10_dx1==("K650") |i10_dx1==("K650") |i10_dx1==("K651") |i10_dx1==("K652") |i10_dx1==("K653") |i10_dx1
+> ==("K654") |i10_dx1==("K658") |i10_dx1==("K658") |i10_dx1==("K659") |i10_dx1==("K67") |i10_dx1==("K6811
+> ") |i10_dx1==("K6812") |i10_dx1==("K6819") |i10_dx1==("K689") |i10_dx1==("K7210") |i10_dx1==("K7290") |
+> i10_dx1==("K7290") |i10_dx1==("K7291") |i10_dx1==("K750") |i10_dx1==("K751") |i10_dx1==("K751") |i10_dx
+> 1==("K766") |i10_dx1==("K767") |i10_dx1==("K810") |i10_dx1==("K811") |i10_dx1==("K812") |i10_dx1==("K81
+> 9") |i10_dx1==("K820") |i10_dx1==("K821") |i10_dx1==("K822") |i10_dx1==("K823") |i10_dx1==("K824") |i10
+> _dx1==("K828") |i10_dx1==("K829") |i10_dx1==("K9081") |i10_dx1==("K9402") |i10_dx1==("L03019") |i10_dx1
+> ==("L03029") |i10_dx1==("L03039") |i10_dx1==("L03049") |i10_dx1==("L03119") |i10_dx1==("L03129") |i10_d
+> x1==("L03211") |i10_dx1==("L03212") |i10_dx1==("L03213") |i10_dx1==("L03221") |i10_dx1==("L03222") |i10
+> _dx1==("L03317") |i10_dx1==("L03319") |i10_dx1==("L03329") |i10_dx1==("L03811") |i10_dx1==("L03818") |i
+> 10_dx1==("L03891") |i10_dx1==("L03898") |i10_dx1==("L0390") |i10_dx1==("L0391") |i10_dx1==("L049") |i10
+> _dx1==("L0501") |i10_dx1==("L0502") |i10_dx1==("L05091") |i10_dx1==("L0592") |i10_dx1==("L080") |i10_dx
+> 1==("L081") |i10_dx1==("L0889") |i10_dx1==("L0889") |i10_dx1==("L089") |i10_dx1==("L88") |i10_dx1==("L9
+> 80") |i10_dx1==("M0000") |i10_dx1==("M00019") |i10_dx1==("M00029") |i10_dx1==("M00039") |i10_dx1==("M00
+> 049") |i10_dx1==("M00059") |i10_dx1==("M00069") |i10_dx1==("M00079") |i10_dx1==("M0008") |i10_dx1==("M0
+> 009") |i10_dx1==("M0010") |i10_dx1==("M00119") |i10_dx1==("M00129") |i10_dx1==("M00139") |i10_dx1==("M0
+> 0149") |i10_dx1==("M00159") |i10_dx1==("M00169") |i10_dx1==("M00179") |i10_dx1==("M0018") |i10_dx1==("M
+> 0019") |i10_dx1==("M0020") |i10_dx1==("M00219") |i10_dx1==("M00229") |i10_dx1==("M00239") |i10_dx1==("M
+> 00249") |i10_dx1==("M00259") |i10_dx1==("M00269") |i10_dx1==("M00279") |i10_dx1==("M0028") |i10_dx1==("
+> M0029") |i10_dx1==("M0080") |i10_dx1==("M00819") |i10_dx1==("M00829") |i10_dx1==("M00839") |i10_dx1==("
+> M00849") |i10_dx1==("M00859") |i10_dx1==("M00869") |i10_dx1==("M00879") |i10_dx1==("M0088") |i10_dx1==(
+> "M0089") |i10_dx1==("M009") |i10_dx1==("M009") |i10_dx1==("M01X0") |i10_dx1==("M01X19") |i10_dx1==("M01
+> X29") |i10_dx1==("M01X39") |i10_dx1==("M01X49") |i10_dx1==("M01X59") |i10_dx1==("M01X69") |i10_dx1==("M
+> 01X79") |i10_dx1==("M01X8") |i10_dx1==("M01X9") |i10_dx1==("M0210") |i10_dx1==("M02119") |i10_dx1==("M0
+> 2129") |i10_dx1==("M02139") |i10_dx1==("M02149") |i10_dx1==("M02159") |i10_dx1==("M02169") |i10_dx1==("
+> M02179") |i10_dx1==("M0218") |i10_dx1==("M0219") |i10_dx1==("M0230") |i10_dx1==("M02319") |i10_dx1==("M
+> 02329") |i10_dx1==("M02339") |i10_dx1==("M02349") |i10_dx1==("M02359") |i10_dx1==("M02369") |i10_dx1==(
+> "M02379") |i10_dx1==("M0238") |i10_dx1==("M0239") |i10_dx1==("M272") |i10_dx1==("M352") |i10_dx1==("M46
+> 20") |i10_dx1==("M4630") |i10_dx1==("M60009") |i10_dx1==("M726") |i10_dx1==("M8610") |i10_dx1==("M86119
+> ") |i10_dx1==("M86129") |i10_dx1==("M86139") |i10_dx1==("M86149") |i10_dx1==("M86159") |i10_dx1==("M861
+> 69") |i10_dx1==("M86179") |i10_dx1==("M8618") |i10_dx1==("M8619") |i10_dx1==("M8620") |i10_dx1==("M8621
+> 9") |i10_dx1==("M86229") |i10_dx1==("M86239") |i10_dx1==("M86249") |i10_dx1==("M86259") |i10_dx1==("M86
+> 269") |i10_dx1==("M86279") |i10_dx1==("M8628") |i10_dx1==("M8629") |i10_dx1==("M8660") |i10_dx1==("M866
+> 19") |i10_dx1==("M86629") 
+(383,973 real changes made)
+
+.         
+.         replace allsepsis = 1 if i10_dx1==("M86639") |i10_dx1==("M86642") |i10_dx1==("M86659") |i10_dx1
+> ==("M86669") |i10_dx1==("M86679") |i10_dx1==("M8668") |i10_dx1==("M8669") |i10_dx1==("M869") |i10_dx1==
+> ("M8960") |i10_dx1==("M89619") |i10_dx1==("M89629") |i10_dx1==("M89639") |i10_dx1==("M89649") |i10_dx1=
+> =("M89659") |i10_dx1==("M89669") |i10_dx1==("M89679") |i10_dx1==("M8968") |i10_dx1==("M8969") |i10_dx1=
+> =("M9080") |i10_dx1==("M90819") |i10_dx1==("M90829") |i10_dx1==("M90839") |i10_dx1==("M90849") |i10_dx1
+> ==("M90859") |i10_dx1==("M90869") |i10_dx1==("M90879") |i10_dx1==("M9088") |i10_dx1==("M9089") |i10_dx1
+> ==("N10") |i10_dx1==("N110") |i10_dx1==("N118") |i10_dx1==("N12") |i10_dx1==("N139") |i10_dx1==("N151")
+>  |i10_dx1==("N159") |i10_dx1==("N16") |i10_dx1==("N2884") |i10_dx1==("N2885") |i10_dx1==("N2886") |i10_
+> dx1==("N360") |i10_dx1==("N361") |i10_dx1==("N362") |i10_dx1==("N3641") |i10_dx1==("N3642") |i10_dx1==(
+> "N365") |i10_dx1==("N368") |i10_dx1==("N368") |i10_dx1==("N369") |i10_dx1==("N390") |i10_dx1==("N398") 
+> |i10_dx1==("N399") |i10_dx1==("N410") |i10_dx1==("N411") |i10_dx1==("N412") |i10_dx1==("N413") |i10_dx1
+> ==("N414") |i10_dx1==("N418") |i10_dx1==("N419") |i10_dx1==("N451") |i10_dx1==("N452") |i10_dx1==("N453
+> ") |i10_dx1==("N454") |i10_dx1==("N51") |i10_dx1==("N51") |i10_dx1==("N7001") |i10_dx1==("N7002") |i10_
+> dx1==("N7003") |i10_dx1==("N7011") |i10_dx1==("N7012") |i10_dx1==("N7013") |i10_dx1==("N7091") |i10_dx1
+> ==("N7092") |i10_dx1==("N7093") |i10_dx1==("N710") |i10_dx1==("N711") |i10_dx1==("N719") |i10_dx1==("N7
+> 30") |i10_dx1==("N731") |i10_dx1==("N732") |i10_dx1==("N733") |i10_dx1==("N734") |i10_dx1==("N736") |i1
+> 0_dx1==("N738") |i10_dx1==("N739") |i10_dx1==("N751") |i10_dx1==("N764") | i10_dx1==("R310") |i10_dx1==
+> ("R311") |i10_dx1==("R3121") |i10_dx1==("R3129") |i10_dx1==("R319") |i10_dx1==("R7881") |i10_dx1==("T79
+> 8XXA") |i10_dx1==("T80211A") |i10_dx1==("T80212A") |i10_dx1==("T80219A") |i10_dx1==("T8022XA") |i10_dx1
+> ==("T8029XA") |i10_dx1==("T814XXA") |i10_dx1==("T814XXA") |i10_dx1==("T826XXA") |i10_dx1==("T827XXA") |
+> i10_dx1==("T827XXA") |i10_dx1==("T83510A") |i10_dx1==("T83511A") |i10_dx1==("T83512A") |i10_dx1==("T835
+> 18A") |i10_dx1==("T83590A") |i10_dx1==("T83591A") |i10_dx1==("T83592A") |i10_dx1==("T83593A") |i10_dx1=
+> =("T83598A") |i10_dx1==("T8361XA") |i10_dx1==("T8362XA") |i10_dx1==("T8369XA") |i10_dx1==("T8450XA") |i
+> 10_dx1==("T8460XA") |i10_dx1==("T847XXA") |i10_dx1==("T8571XA") |i10_dx1==("T85730A") |i10_dx1==("T8573
+> 1A") |i10_dx1==("T85732A") |i10_dx1==("T85733A") |i10_dx1==("T85734A") |i10_dx1==("T85735A") |i10_dx1==
+> ("T85738A") |i10_dx1==("T8579XA") |i10_dx1==("T8579XA") |i10_dx1==("T880XXA") |i10_dx1==("Z332") |i10_d
+> x1==("Z332") |i10_dx1==("Z332") |i10_dx1==("A000") |i10_dx1==("O0484") | i10_dx1==("A021") | i10_dx1==(
+> "A227") | i10_dx1==("A267") | i10_dx1==("A327") | i10_dx1==("A403") | i10_dx1==("A409") | i10_dx1==("A4
+> 101") | i10_dx1==("A4102") | i10_dx1==("A411") | i10_dx1==("A412") | i10_dx1==("A413") | i10_dx1==("A41
+> 4") | i10_dx1==("A4150") | i10_dx1==("A4151") | i10_dx1==("A4152") | i10_dx1==("A4153") | i10_dx1==("A4
+> 159") | i10_dx1==("A4189") | i10_dx1==("A419") | i10_dx1==("A5486") | i10_dx1==("B377")
+(523,700 real changes made)
+
+. 
+end of do-file
+
+. do "/var/folders/4t/jk7v7swn6j518nd6g3tykdyh0000gn/T//SD02583.000000"
+
+. *Use for 2016 data
+. gen organdys = 0
+
+. foreach num of numlist 2/30 {
+  2.         replace organdys = 1 if inlist(i10_dx`num', "D65",  "D688",  "D689",  "D6951",  "D6959") | i
+> nlist(i10_dx`num', "D696",  "F05",  "G931",  "G9340", "G9341") | inlist(i10_dx`num', "G9349",  "I6783",
+>   "I952",  "I953",  "I9581") | inlist(i10_dx`num', "I9589",  "J80",  "J9600",  "J9610",  "J9620") | inl
+> ist(i10_dx`num', "J9690",  "J984",  "K7200",  "K762",  "K763") | inlist(i10_dx`num', "N170",  "N171",  
+> "N172",  "N178",  "N179") | inlist(i10_dx`num', "R0603",  "R0681",  "R092",  "R570",  "R571") | inlist(
+> i10_dx`num', "R578",  "R579",  "R6521",  "I951") 
+  3. }
+(519,995 real changes made)
+(341,377 real changes made)
+(160,810 real changes made)
+(86,710 real changes made)
+(52,031 real changes made)
+(34,316 real changes made)
+(24,719 real changes made)
+(19,481 real changes made)
+(15,572 real changes made)
+(13,219 real changes made)
+(11,204 real changes made)
+(9,537 real changes made)
+(7,883 real changes made)
+(6,688 real changes made)
+(5,552 real changes made)
+(4,874 real changes made)
+(4,034 real changes made)
+(2,902 real changes made)
+(2,459 real changes made)
+(2,065 real changes made)
+(1,718 real changes made)
+(1,381 real changes made)
+(1,197 real changes made)
+(885 real changes made)
+(531 real changes made)
+(457 real changes made)
+(336 real changes made)
+(287 real changes made)
+(246 real changes made)
+
+. 
+end of do-file
+
+. do "/var/folders/4t/jk7v7swn6j518nd6g3tykdyh0000gn/T//SD02583.000000"
+
+. replace allsepsis = 0 if organdys==0
+(576,643 real changes made)
+
+. replace allsepsis = 1 if explicitsepsis==1
+(2,967 real changes made)
+
+. *************************
+. 
+. *See how many have sepsis
+. gen full_cohort=0
+
+. replace full_cohort = 1 if allsepsis==1
+(354,343 real changes made)
+
+. svy: tab allsepsis, count format(%20.10f)
+(running tabulate on estimation sample)
+
+Number of strata =     1                          Number of obs   =  7,135,090
+Number of PSUs   = 4,575                          Population size = 35,675,421
+                                                  Design df       =      4,574
+
+-------------------------------
+allsepsis |               count
+----------+--------------------
+        0 | 33903707.2864543200
+        1 |  1771713.7164781913
+          | 
+    Total | 35675421.0029325113
+-------------------------------
+Key:    count = Weighted count
+
+. 
+. *Delete those who have age less than 18
+. replace full_cohort = 0 if age<18
+(4,663 real changes made)
+
+. svy: tab full_cohort, count format(%20.10f)
+(running tabulate on estimation sample)
+
+Number of strata =     1                          Number of obs   =  7,135,090
+Number of PSUs   = 4,575                          Population size = 35,675,421
+                                                  Design df       =      4,574
+
+-------------------------------
+full_coho |
+rt        |               count
+----------+--------------------
+        0 | 33927022.2720333636
+        1 |  1748398.7308917472
+          | 
+    Total | 35675421.0029251128
+-------------------------------
+Key:    count = Weighted count
+
+. 
+. *Delete those who have missing mortality data
+. replace full_cohort = 0 if died==.
+(320 real changes made)
+
+. svy: tab full_cohort, count format(%20.10f)
+(running tabulate on estimation sample)
+
+Number of strata =     1                          Number of obs   =  7,135,090
+Number of PSUs   = 4,575                          Population size = 35,675,421
+                                                  Design df       =      4,574
+
+-------------------------------
+full_coho |
+rt        |               count
+----------+--------------------
+        0 | 33928622.2737380043
+        1 |  1746798.7291865409
+          | 
+    Total | 35675421.0029245391
+-------------------------------
+Key:    count = Weighted count
+
+. 
+. *Delete those who have missing age data
+. replace age = . if age==0
+(843,322 real changes made, 843,322 to missing)
+
+. replace full_cohort = 0 if age==. 
+(97 real changes made)
+
+. svy: tab full_cohort, count format(%20.10f)
+(running tabulate on estimation sample)
+
+Number of strata =     1                          Number of obs   =  7,135,090
+Number of PSUs   = 4,575                          Population size = 35,675,421
+                                                  Design df       =      4,574
+
+-------------------------------
+full_coho |
+rt        |               count
+----------+--------------------
+        0 | 33929107.2725969478
+        1 |  1746313.7303274390
+          | 
+    Total | 35675421.0029243901
+-------------------------------
+Key:    count = Weighted count
+
+. 
+. *Delete those who have missing sex data
+. replace full_cohort = 0 if female==.
+(160 real changes made)
+
+. svy: tab full_cohort, count format(%20.10f)
+(running tabulate on estimation sample)
+
+Number of strata =     1                          Number of obs   =  7,135,090
+Number of PSUs   = 4,575                          Population size = 35,675,421
+                                                  Design df       =      4,574
+
+-------------------------------
+full_coho |
+rt        |               count
+----------+--------------------
+        0 | 33929907.2690506876
+        1 |  1745513.7338734381
+          | 
+    Total | 35675421.0029241219
+-------------------------------
+Key:    count = Weighted count
+
+. 
+. *Delete those who have missing race/ethnicity data
+. replace full_cohort = 0 if race==.
+(12,892 real changes made)
+
+. svy: tab full_cohort, count format(%20.10f)
+(running tabulate on estimation sample)
+
+Number of strata =     1                          Number of obs   =  7,135,090
+Number of PSUs   = 4,575                          Population size = 35,675,421
+                                                  Design df       =      4,574
+
+-------------------------------
+full_coho |
+rt        |               count
+----------+--------------------
+        0 | 33994367.3423401341
+        1 |  1681053.6605896233
+          | 
+    Total | 35675421.0029297546
+-------------------------------
+Key:    count = Weighted count
+
+. 
+. *Get age, sex, race info for sepsis cohort
+. svy: proportion full_cohort
+(running proportion on estimation sample)
+
+Survey: Proportion estimation
+
+Number of strata =     1          Number of obs   =  7,135,090
+Number of PSUs   = 4,575          Population size = 35,675,421
+                                  Design df       =      4,574
+
+--------------------------------------------------------------
+             |             Linearized            Logit
+             | Proportion   std. err.     [95% conf. interval]
+-------------+------------------------------------------------
+ full_cohort |
+          0  |   .9528792   .0004358      .9520175    .9537262
+          1  |   .0471208   .0004358      .0462738    .0479825
+--------------------------------------------------------------
+
+. svy: mean age if full_cohort==1
+(running mean on estimation sample)
+
+Survey: Mean estimation
+
+Number of strata =     1           Number of obs   =   336,211
+Number of PSUs   = 3,886           Population size = 1,681,054
+                                   Design df       =     3,885
+
+--------------------------------------------------------------
+             |             Linearized
+             |       Mean   std. err.     [95% conf. interval]
+-------------+------------------------------------------------
+         age |   68.63049   .0962575      68.44177    68.81921
+--------------------------------------------------------------
+
+. svy: proportion male if full_cohort==1
+(running proportion on estimation sample)
+
+Survey: Proportion estimation
+
+Number of strata =     1           Number of obs   =   336,211
+Number of PSUs   = 3,886           Population size = 1,681,054
+                                   Design df       =     3,885
+
+--------------------------------------------------------------
+             |             Linearized            Logit
+             | Proportion   std. err.     [95% conf. interval]
+-------------+------------------------------------------------
+        male |
+          0  |   .5042964   .0011624      .5020174    .5065752
+          1  |   .4957036   .0011624      .4934248    .4979826
+--------------------------------------------------------------
+
+. svy: proportion race if full_cohort==1
+(running proportion on estimation sample)
+
+Survey: Proportion estimation
+
+Number of strata =     1           Number of obs   =   336,211
+Number of PSUs   = 3,886           Population size = 1,681,054
+                                   Design df       =     3,885
+
+--------------------------------------------------------------
+             |             Linearized            Logit
+             | Proportion   std. err.     [95% conf. interval]
+-------------+------------------------------------------------
+        race |
+          1  |   .7147774   .0053438      .7041858    .7251377
+          2  |   .1395523   .0036107      .1326225    .1467829
+          3  |   .0885158   .0035144      .0818634    .0956524
+          4  |   .0264031   .0015527      .0235237    .0296242
+          5  |   .0068528   .0005875       .005792    .0081063
+          6  |   .0238987   .0014898      .0211456    .0270003
+--------------------------------------------------------------
+
+. 
+end of do-file
+
+. do "/var/folders/4t/jk7v7swn6j518nd6g3tykdyh0000gn/T//SD02583.000000"
+
+. *Use for 2016 data
+. elixhauser i10_dx2-i10_dx30, index(10)
+(0 observations deleted)
+ELIXHAUSER COMORBIDITY MACRO
+Providing Summary of Elixhauser Codes
+OPTIONS SELECTED: 
+INPUT DATA:   Quan ICD-10
+OBSERVATIONAL UNIT: Visits
+ID VARIABLE NAME (Given only if Unit is Patients): 
+PREFIX of COMORBIDITY VARIABLES:  
+SUMMARIZE ELIXHAUSER INDEX SUM: NO
+SUMMARIZE INDIVIDUAL COMORBIDITIES: NO
+Please wait. Thank you!
+Program takes a few minutes - there are up to 29 ICD-10 codes per subject.
+Iteration 1 of 29 - Program is running - Please wait
+Iteration 2 of 29 - Program is running - Please wait
+Iteration 3 of 29 - Program is running - Please wait
+Iteration 4 of 29 - Program is running - Please wait
+Iteration 5 of 29 - Program is running - Please wait
+Iteration 6 of 29 - Program is running - Please wait
+Iteration 7 of 29 - Program is running - Please wait
+Iteration 8 of 29 - Program is running - Please wait
+Iteration 9 of 29 - Program is running - Please wait
+Iteration 10 of 29 - Program is running - Please wait
+Iteration 11 of 29 - Program is running - Please wait
+Iteration 12 of 29 - Program is running - Please wait
+Iteration 13 of 29 - Program is running - Please wait
+Iteration 14 of 29 - Program is running - Please wait
+Iteration 15 of 29 - Program is running - Please wait
+Iteration 16 of 29 - Program is running - Please wait
+Iteration 17 of 29 - Program is running - Please wait
+Iteration 18 of 29 - Program is running - Please wait
+Iteration 19 of 29 - Program is running - Please wait
+Iteration 20 of 29 - Program is running - Please wait
+Iteration 21 of 29 - Program is running - Please wait
+Iteration 22 of 29 - Program is running - Please wait
+Iteration 23 of 29 - Program is running - Please wait
+Iteration 24 of 29 - Program is running - Please wait
+Iteration 25 of 29 - Program is running - Please wait
+Iteration 26 of 29 - Program is running - Please wait
+Iteration 27 of 29 - Program is running - Please wait
+Iteration 28 of 29 - Program is running - Please wait
+Iteration 29 of 29 - Program is running - Please wait
+Total Number of Observational Units (Visits OR Patients): 7135090
+
+. 
+end of do-file
+
+. do "/var/folders/4t/jk7v7swn6j518nd6g3tykdyh0000gn/T//SD02583.000000"
+
+. gen elix = 0
+
+. replace elix = elixsum-ynel5
+(5,106,070 real changes made)
+
+. 
+. gen allPAD=0
+
+. replace allPAD=1 if ynel5==1
+(439,043 real changes made)
+
+. 
+. /*What proportion of all NIS patients have PAD?
+> svy: tab allPAD if age >17, count format(%20.10f)
+> svy: proportion allPAD if age>17*/
+. 
+. *Save only sepsis cohort
+. drop if full_cohort == 0
+(6,798,879 observations deleted)
+
+. 
+. save "/Users/stuthiiyer/Documents/Stuthi/Year 2 Pitt MPH/Work-Related/CLI:Sepsis /2016sepsiscohort.dta"
+> , replace
+(file /Users/stuthiiyer/Documents/Stuthi/Year 2 Pitt MPH/Work-Related/CLI:Sepsis /2016sepsiscohort.dta
+    not found)
+file /Users/stuthiiyer/Documents/Stuthi/Year 2 Pitt MPH/Work-Related/CLI:Sepsis /2016sepsiscohort.dta
+    saved
+
+. log close
+      name:  <unnamed>
+       log:  /Users/stuthiiyer/Documents/Stuthi/Year 2 Pitt MPH/Work-Related/CLI:Sepsis /Cohort Def 2016.
+> log
+  log type:  text
+ closed on:  18 Sep 2024, 14:18:22
+---------------------------------------------------------------------------------------------------------

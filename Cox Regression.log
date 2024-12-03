@@ -1,0 +1,1556 @@
+----------------------------------------------------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  /Users/stuthiiyer/Documents/Stuthi/Year 2 Pitt MPH/Work-Related/CLI:Sepsis /Cox Regression.log
+  log type:  text
+ opened on:   3 Dec 2024, 09:28:10
+
+. 
+. use "/Users/stuthiiyer/Documents/Stuthi/Year 2 Pitt MPH/Work-Related/CLI:Sepsis /All Sepsis.dta", clear 
+
+. 
+. svyset hosp_nis [pw=discwt]
+
+Sampling weights: discwt
+             VCE: linearized
+     Single unit: missing
+        Strata 1: <one>
+ Sampling unit 1: hosp_nis
+           FPC 1: <zero>
+
+. 
+. ******************************************************************************
+. 
+. *Cox Regression
+. *what is the earliest day someone went to the OR
+. gen first_or_day = .
+(1,877,724 missing values generated)
+
+. foreach num of numlist 1/25 {
+  2.         replace first_or_day = prday`num' if prday`num'<first_or_day
+  3. }
+(1,052,505 real changes made)
+(116,048 real changes made)
+(60,296 real changes made)
+(32,285 real changes made)
+(19,721 real changes made)
+(12,154 real changes made)
+(7,202 real changes made)
+(4,712 real changes made)
+(3,391 real changes made)
+(2,298 real changes made)
+(1,644 real changes made)
+(1,208 real changes made)
+(883 real changes made)
+(579 real changes made)
+(493 real changes made)
+(335 real changes made)
+(248 real changes made)
+(179 real changes made)
+(146 real changes made)
+(125 real changes made)
+(98 real changes made)
+(63 real changes made)
+(63 real changes made)
+(31 real changes made)
+(38 real changes made)
+
+. 
+. *Create a new variable that is only the cases done on the 1st OR day
+. foreach num of numlist 1/25 {
+  2.         gen first_or_i10_pr`num' = i10_pr`num' if first_or_day==prday`num'
+  3.         
+. }
+(1,021,733 missing values generated)
+(1,416,892 missing values generated)
+(1,596,263 missing values generated)
+(1,696,438 missing values generated)
+(1,757,406 missing values generated)
+(1,796,898 missing values generated)
+(1,829,058 missing values generated)
+(1,843,863 missing values generated)
+(1,853,141 missing values generated)
+(1,859,966 missing values generated)
+(1,864,935 missing values generated)
+(1,868,300 missing values generated)
+(1,870,896 missing values generated)
+(1,872,624 missing values generated)
+(1,873,826 missing values generated)
+(1,875,138 missing values generated)
+(1,875,759 missing values generated)
+(1,876,177 missing values generated)
+(1,876,426 missing values generated)
+(1,876,709 missing values generated)
+(1,876,951 missing values generated)
+(1,877,081 missing values generated)
+(1,877,212 missing values generated)
+(1,877,312 missing values generated)
+(1,877,369 missing values generated)
+
+. 
+. *Count revascs if it is the earliest OR procedure
+. gen revasc = 0
+
+. *Open Pt 1-suprainguinal bypass
+. foreach num of numlist 1/25 {
+  2.         replace revasc = 1 if inlist(first_or_i10_pr`num', "041K09J", "041K09K", "041K0AJ", "041K0JJ", "041K0JK") | inl
+> ist(first_or_i10_pr`num', "041K0KJ") | inlist(first_or_i10_pr`num', "041K0KK", "041K0ZJ", "041K0ZK") | inlist(first_or_i10
+> _pr`num', "041K49J", "041K49K", "041K4AJ", "041K4AK", "041K4JJ") | inlist(first_or_i10_pr`num', "041K4JK", "041K4KJ", "041
+> K4KK", "041K4ZJ", "041K4ZK") | inlist(first_or_i10_pr`num', "041L09K", "041L0AH", "041L0AK", "041L0JH", "041L0JK") | inlis
+> t(first_or_i10_pr`num', "041L0KH", "041L0KK", "041L0ZH", "041L0ZK", "041L49H") | inlist(first_or_i10_pr`num', "041L49K", "
+> 041L4AH", "041L4AK", "041L4JH", "041L4JK") | inlist(first_or_i10_pr`num', "041L4KH", "041L4KK", "041L4ZH", "041L4ZK", "041
+> K09H") | inlist(first_or_i10_pr`num', "041K09L", "041K09M", "041K09N", "041K09P", "041K09Q") | inlist(first_or_i10_pr`num'
+> , "041K09S", "041K0AH", "041K0AL", "041K0AM", "041K0AN") | inlist(first_or_i10_pr`num', "041K0AP", "041K0AQ", "041K0AS", "
+> 041K0JH", "041K0JL") | inlist(first_or_i10_pr`num', "041K0JM", "041K0JN", "041K0JP", "041K0JQ", "041K0JS") | inlist(first_
+> or_i10_pr`num', "041K0KH", "041K0KL", "041K0KM", "041K0KN", "041K0KP") | inlist(first_or_i10_pr`num', "041K0KQ", "041K0KS"
+> , "041K0ZH", "041K0ZL", "041K0ZM") | inlist(first_or_i10_pr`num', "041K0ZN", "041K0ZP", "041K0ZQ", "041K0ZS", "041K49H") |
+>  inlist(first_or_i10_pr`num', "041K49L", "041K49M", "041K49N", "041K49P", "041K49Q") | inlist(first_or_i10_pr`num', "041K4
+> 9S", "041K4AH", "041K4AL", "041K4AM", "041K4AN") | inlist(first_or_i10_pr`num', "041K4AP", "041K4AQ", "041K4AS", "041K4JH"
+> , "041K4JL") | inlist(first_or_i10_pr`num', "041K4JM", "041K4JN", "041K4JP", "041K4JQ", "041K4JS") | inlist(first_or_i10_p
+> r`num', "041K4KH", "041K4KL", "041K4KM", "041K4KN", "041K4KP") | inlist(first_or_i10_pr`num', "041K4KQ", "041K4KS", "041K4
+> ZH", "041K4ZL", "041K4ZM") | inlist(first_or_i10_pr`num', "041K4ZN", "041K4ZP", "041K4ZQ", "041K4ZS", "041L09J") | inlist(
+> first_or_i10_pr`num', "041L09L", "041L09M", "041L09N", "041L09P", "041L09Q") | inlist(first_or_i10_pr`num', "041L09S", "04
+> 1L0AJ", "041L0AL", "041L0AM", "041L0AN") | inlist(first_or_i10_pr`num', "041L0AP", "041L0AQ", "041L0AS", "041L0JJ", "041L0
+> JL") | inlist(first_or_i10_pr`num', "041L0JM", "041L0JN", "041L0JP", "041L0JQ", "041L0JS") | inlist(first_or_i10_pr`num', 
+> "041L0KJ", "041L0KL", "041L0KM", "041L0KN", "041L0KP") | inlist(first_or_i10_pr`num', "041L0KQ", "041L0KS", "041L0ZJ", "04
+> 1L0ZL", "041L0ZM") | inlist(first_or_i10_pr`num', "041L0ZN", "041L0ZP", "041L0ZQ", "041L0ZS", "041L49J") | inlist(first_or
+> _i10_pr`num', "041L49L", "041L49M", "041L49N", "041L49P", "041L49Q") | inlist(first_or_i10_pr`num', "041L49S", "041L4AJ", 
+> "041L4AL", "041L4AM", "041L4AN") | inlist(first_or_i10_pr`num', "041L4AP", "041L4AQ", "041L4AS", "041L4JJ", "041L4JL") | i
+> nlist(first_or_i10_pr`num', "041L4JM", "041L4JN", "041L4JP", "041L4JQ", "041L4JQ") | inlist(first_or_i10_pr`num', "041L4JS
+> ", "041L4KJ", "041L4KL", "041L4KM", "041L4KN") | inlist(first_or_i10_pr`num', "041L4KP", "041L4KQ", "041L4KS", "041L4ZJ", 
+> "041L4ZL") | inlist(first_or_i10_pr`num', "041L4ZM", "041L4ZN", "041L4ZP", "041L4ZQ", "041L4ZS") | inlist(first_or_i10_pr`
+> num', "041M09L", "041M09M", "041M09P", "041M09Q", "041M09S") | inlist(first_or_i10_pr`num', "041M0AL", "041M0AM", "041M0AP
+> ", "041M0AQ", "041M0AS") | inlist(first_or_i10_pr`num', "041M0JL", "041M0JM", "041M0JP", "041M0JQ", "041M0JS") | inlist(fi
+> rst_or_i10_pr`num', "041M0KL", "041M0KM", "041M0KP", "041M0KQ", "041M0KS") | inlist(first_or_i10_pr`num', "041M0ZL", "041M
+> 0ZM", "041M0ZP", "041M0ZQ", "041M0ZS") | inlist(first_or_i10_pr`num', "041M49L", "041M49M", "041M49P", "041M49Q", "041M49S
+> ") | inlist(first_or_i10_pr`num', "041M4AL", "041M4AM", "041M4AP", "041M4AQ", "041M4AS") | inlist(first_or_i10_pr`num', "0
+> 41M4JL", "041M4JM", "041M4JP", "041M4JQ", "041M4JS") | inlist(first_or_i10_pr`num', "041M4KL", "041M4KM", "041M4KP", "041M
+> 4KQ", "041M4KS") | inlist(first_or_i10_pr`num', "041M4ZL", "041M4ZM", "041M4ZP", "041M4ZQ", "041M4ZS") | inlist(first_or_i
+> 10_pr`num', "041N09L", "041N09M", "041N09P", "041N09Q", "041N09S") | inlist(first_or_i10_pr`num', "041N0AL", "041N0AM", "0
+> 41N0AP", "041N0AQ", "041N0AS") | inlist(first_or_i10_pr`num', "041N0JL", "041N0JM", "041N0JP", "041N0JQ", "041N0JS") | inl
+> ist(first_or_i10_pr`num', "041N0KL", "041N0KM", "041N0KP", "041N0KQ", "041N0KS") | inlist(first_or_i10_pr`num', "041N0ZL",
+>  "041N0ZM", "041N0ZP", "041N0ZQ", "041N0ZS") | inlist(first_or_i10_pr`num', "041N49L", "041N49M", "041N49P", "041N49Q", "0
+> 41N49S") | inlist(first_or_i10_pr`num', "041N4AL", "041N4AM", "041N4AP", "041N4AQ", "041N4AS") | inlist(first_or_i10_pr`nu
+> m', "041N4JL", "041N4JM", "041N4JP", "041N4JQ", "041N4JS") | inlist(first_or_i10_pr`num', "041N4KL", "041N4KM", "041N4KP",
+>  "041N4KQ", "041N4KS") | inlist(first_or_i10_pr`num', "041N4ZL", "041N4ZM", "041N4ZP", "041N4ZQ", "041N4ZS") | inlist(firs
+> t_or_i10_pr`num', "04RK07Z", "04RK0JZ", "04RK0KZ", "04RK47Z", "04RK4JZ") | inlist(first_or_i10_pr`num', "04RK4KZ", "04RL07
+> Z", "04RL0JZ", "04RL0KZ", "04RL47Z") | inlist(first_or_i10_pr`num', "04RL4JZ", "04RL4KZ", "04RM07Z", "04RM0JZ", "04RM0KZ")
+>  | inlist(first_or_i10_pr`num', "04RM47Z", "04RM4JZ", "04RM4KZ", "04RN07Z", "04RN0JZ") | inlist(first_or_i10_pr`num', "04R
+> N0KZ", "04RN47Z", "04RN4JZ", "04RN4KZ", "04RP07Z") | inlist(first_or_i10_pr`num', "04RP0JZ", "04RP0KZ", "04RP47Z", "04RP4J
+> Z", "04RP4KZ") | inlist(first_or_i10_pr`num', "04RQ07Z", "04RQ0JZ", "04RQ0KZ", "04RQ47Z", "04RQ4JZ") | inlist(first_or_i10
+> _pr`num', "04RQ4KZ", "04RR07Z", "04RR0JZ", "04RR0KZ", "04RR47Z") | inlist(first_or_i10_pr`num', "04RR4JZ", "04RR4KZ", "04R
+> S07Z", "04RS0JZ", "04RS0KZ") | inlist(first_or_i10_pr`num', "04RS47Z", "04RS4JZ", "04RS4KZ", "04RT07Z", "04RT0JZ") | inlis
+> t(first_or_i10_pr`num', "04RT0KZ", "04RT47Z", "04RT4JZ", "04RT4KZ", "04RU07Z") | inlist(first_or_i10_pr`num', "04RU0JZ", "
+> 04RU0KZ", "04RU47Z", "04RU4JZ", "04RU4KZ") | inlist(first_or_i10_pr`num', "04RV07Z", "04RV0JZ", "04RV0KZ", "04RV47Z", "04R
+> V4JZ") | inlist(first_or_i10_pr`num', "04RV4KZ", "04RW07Z", "04RW0JZ", "04RW0KZ", "04RW47Z") | inlist(first_or_i10_pr`num'
+> , "04RW4JZ", "04RW4KZ", "04RY07Z", "04RY0JZ", "04RY0KZ") | inlist(first_or_i10_pr`num', "04RY47Z", "04RY4JZ", "04RY4KZ","0
+> 41P0JQ", "041P0JS") | inlist(first_or_i10_pr`num', "041P3JQ", "041P3JS", "041P4JQ", "041P4JS", "041W09P") | inlist(first_o
+> r_i10_pr`num', "041W09Q", "041W09S", "041W0AP", "041W0AQ", "041W0AS") | inlist(first_or_i10_pr`num', "041W0JP", "041W0JQ",
+>  "041W0JS", "041W0KP", "041W0KQ") | inlist(first_or_i10_pr`num', "041W0KS", "041W0ZP", "041W0ZQ", "041W0ZS", "041W3JQ") | 
+> inlist(first_or_i10_pr`num', "041W3JS", "041W49P", "041W49Q", "041W49S", "041W4AP") | inlist(first_or_i10_pr`num', "041W4A
+> Q", "041W4AS", "041W4JP", "041W4JQ", "041W4JS") | inlist(first_or_i10_pr`num', "041W4KP", "041W4KQ", "041W4KS", "041W4ZP",
+>  "041W4ZQ") | inlist(first_or_i10_pr`num', "041W4ZS", "041V09P", "041V09Q", "041V09S", "041V0AP") | inlist(first_or_i10_pr
+> `num', "041V0AQ", "041V0AS", "041V0JP", "041V0JQ", "041V0JS") | inlist(first_or_i10_pr`num', "041V0KP", "041V0KQ", "041V0K
+> S", "041V0ZP", "041V0ZQ") | inlist(first_or_i10_pr`num', "041V0ZS", "041V3JQ", "041V3JS", "041V49P", "041V49Q") | inlist(f
+> irst_or_i10_pr`num', "041V49S", "041V4AP", "041V4AQ", "041V4AS", "041V4JP") | inlist(first_or_i10_pr`num', "041V4JQ", "041
+> V4JS", "041V4KP", "041V4KQ", "041V4KS") | inlist(first_or_i10_pr`num', "041V4ZP", "041V4ZQ", "041V4ZS", "041U09P", "041U09
+> Q") | inlist(first_or_i10_pr`num', "041U09S", "041U0AP", "041U0AQ", "041U0AS", "041U0JP") | inlist(first_or_i10_pr`num', "
+> 041U0JQ", "041U0JS", "041U0KP", "041U0KQ", "041U0KS") | inlist(first_or_i10_pr`num', "041U0ZP", "041U0ZQ", "041U0ZS", "041
+> U3JQ", "041U3JS") | inlist(first_or_i10_pr`num', "041U49P", "041U49Q", "041U49S", "041U4AP", "041U4AQ") | inlist(first_or_
+> i10_pr`num', "041U4AS", "041U4JP", "041U4JQ", "041U4JS", "041U4KP") | inlist(first_or_i10_pr`num', "041U4KQ", "041U4KS", "
+> 041U4ZP", "041U4ZQ", "041U4ZS") | inlist(first_or_i10_pr`num', "041T09P", "041T09Q", "041T09S", "041T0AP", "041T0AQ") | in
+> list(first_or_i10_pr`num', "041T0KQ", "041T0KS", "041T0ZP", "041T0ZQ", "041T0ZS") | inlist(first_or_i10_pr`num', "041T3JQ"
+> , "041T3JS", "041T49P", "041T49Q", "041T49S") | inlist(first_or_i10_pr`num', "041T4AP", "041T4AQ", "041T4AS", "041T4JP", "
+> 041T4JQ") | inlist(first_or_i10_pr`num', "041T4JS", "041T4KP", "041T4KQ", "041T4KS", "041T4ZP") | inlist(first_or_i10_pr`n
+> um', "041T4ZQ", "041T4ZS", "041S0JQ", "041S0JS", "041S3JQ") | inlist(first_or_i10_pr`num', "041S3JS", "041S4JQ", "041S4JS"
+> , "041R0JQ", "041R0JS") | inlist(first_or_i10_pr`num', "041R3JQ", "041R3JS", "041R4JQ", "041R4JS", "041Q0JQ") | inlist(fir
+> st_or_i10_pr`num', "041Q0JS", "041Q3JQ", "041Q3JS", "041Q4JQ", "041Q4JS")
+  3. }
+(170 real changes made)
+(66 real changes made)
+(39 real changes made)
+(23 real changes made)
+(16 real changes made)
+(7 real changes made)
+(3 real changes made)
+(2 real changes made)
+(0 real changes made)
+(1 real change made)
+(1 real change made)
+(0 real changes made)
+(1 real change made)
+(0 real changes made)
+(1 real change made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+
+. *Open Pt 2 *Run next
+. foreach num of numlist 1/25 {
+  2.         replace revasc = 1 if inlist(first_or_i10_pr`num', "041H099", "041H09B", "041H09C", "041H09D", "041H09F") | inl
+> ist(first_or_i10_pr`num', "041H09G", "041H0A9", "041H09B", "041H09C", "041H0AD") | inlist(first_or_i10_pr`num', "041H09H",
+>  "041H09J", "041H09K", "041H09P", "041H09Q") | inlist(first_or_i10_pr`num', "041H0AF", "041H0AG", "041H0AH", "041H0AJ", "0
+> 41H0AK") | inlist(first_or_i10_pr`num', "041H0AP", "041H0AQ", "041H0J9", "041H0JB", "041H0JC") | inlist(first_or_i10_pr`nu
+> m', "041H0JD", "041H0JF", "041H0JG", "041H0JH", "041H0JJ") | inlist(first_or_i10_pr`num', "041H0JK", "041H0JP", "041H0JQ",
+>  "041H0K9", "041H0KB") | inlist(first_or_i10_pr`num', "041H0KC", "041H0KD", "041H0KF", "041H0KG", "041H0KH") | inlist(firs
+> t_or_i10_pr`num', "041H0KJ", "041H0KK", "041H0KP", "041H0KQ", "041H0Z9") | inlist(first_or_i10_pr`num', "041H0ZB", "041H0Z
+> C", "041H0ZD", "041H0ZF", "041H0ZG") | inlist(first_or_i10_pr`num', "041H0ZH", "041H0ZJ", "041H0ZK", "041H0ZP", "041H0ZQ")
+>  | inlist(first_or_i10_pr`num', "041H499", "041H49B", "041H49C", "041H49D", "041H49F") | inlist(first_or_i10_pr`num', "041
+> H49G", "041H49H", "041H49J", "041H49K", "041H49P") | inlist(first_or_i10_pr`num', "041H49Q", "041H4A9", "041H4AB", "041H4A
+> C", "041H4AD") | inlist(first_or_i10_pr`num', "041H4AF", "041H4AG", "041H4AH", "041H4AJ", "041H4AK") | inlist(first_or_i10
+> _pr`num', "041H4AP", "041H4AQ", "041H4J9", "041H4JB", "041H4JC") | inlist(first_or_i10_pr`num', "041H4JD", "041H4JF", "041
+> H4JG", "041H4JH", "041H4JJ") | inlist(first_or_i10_pr`num', "041H4JK", "041H4JP", "041H4JQ", "041H4K9", "041H4KB") | inlis
+> t(first_or_i10_pr`num', "041H4KC", "041H4KD", "041H4KF", "041H4KG", "041H4KH") | inlist(first_or_i10_pr`num', "041H4KJ", "
+> 041H4KK", "041H4KP", "041H4KQ", "041H4Z9") | inlist(first_or_i10_pr`num', "041H4ZB", "041H4ZC", "041H4ZD", "041H4ZF", "041
+> H4ZG") | inlist(first_or_i10_pr`num', "041H4ZH", "041H4ZJ", "041H4ZK", "041H4ZP", "041H4ZQ") | inlist(first_or_i10_pr`num'
+> , "041J099", "041J09B", "041J09C", "041J09F", "041J09J") | inlist(first_or_i10_pr`num', "041J09P", "041J09Q", "041J0A9", "
+> 041J0AB", "041J0AC") | inlist(first_or_i10_pr`num', "041J0AF", "041J0AJ", "041J0AP", "041J0AQ", "041J0J9") | inlist(first_
+> or_i10_pr`num', "041J0JB", "041J0JC", "041J0JF", "041J0JJ", "041J0JP") | inlist(first_or_i10_pr`num', "041J0JQ", "041J0K9"
+> , "041J0KB", "041J0KC", "041J0KF") | inlist(first_or_i10_pr`num', "041J0KJ", "041J0KP", "041J0KQ", "041J0Z9", "041J0ZB") |
+>  inlist(first_or_i10_pr`num', "041J0ZC", "041J0ZF", "041J0ZJ", "041J0ZP", "041J0ZQ") | inlist(first_or_i10_pr`num', "041J4
+> 99", "041J49B", "041J49C", "041J49F", "041J49J") | inlist(first_or_i10_pr`num', "041J49P", "041J49Q", "041J4A9", "041J4AB"
+> , "041J4AC") | inlist(first_or_i10_pr`num', "041J4AF", "041J4AJ", "041J4AP", "041J4AQ", "041J4J9") | inlist(first_or_i10_p
+> r`num', "041J4JB", "041J4JC", "041J4JF", "041J4JJ", "041J4JP") | inlist(first_or_i10_pr`num', "041J4JQ", "041J094K9", "041
+> J4KB", "041J4KC", "041J4KF") | inlist(first_or_i10_pr`num', "041J4KJ", "041J4KP", "041J4KQ", "041J4Z9", "041J4ZB") | inlis
+> t(first_or_i10_pr`num', "041J4ZC", "041J4ZF", "041J4ZJ", "041J4ZP", "041J4ZQ") | inlist(first_or_i10_pr`num', "041J09D", "
+> 041J09G", "041J09H", "041J09K", "041J0AD") | inlist(first_or_i10_pr`num', "041J0AG", "041J0AH", "041J0AK", "041J0JD", "041
+> J0JG") | inlist(first_or_i10_pr`num', "041J0JH", "041J0JK", "041J0KD", "041J0KG", "041J0KH") | inlist(first_or_i10_pr`num'
+> , "041J0KK", "041J0ZD", "041J0ZG", "041J0ZH", "041J0ZK") | inlist(first_or_i10_pr`num', "041J49D", "041J49G", "041J49H", "
+> 041J49K", "041J4AD") | inlist(first_or_i10_pr`num', "041J4AG", "041J4AH", "041J4AK", "041J4JD", "041J4JG") | inlist(first_
+> or_i10_pr`num', "041J4JH", "041J4JK", "041J4KD", "041J4KG", "041J4KH") | inlist(first_or_i10_pr`num', "041J4KK", "041J4ZD"
+> , "041J4ZG", "041J4ZH", "041J4ZK") | inlist(first_or_i10_pr`num', "0315096", "0315097", "0315098", "0315099", "0316096") |
+>  inlist(first_or_i10_pr`num', "0316097", "0316098", "0316099", "0410096", "0410097") | inlist(first_or_i10_pr`num', "04100
+> 98", "0410099", "0410496", "0410497", "0410498") | inlist(first_or_i10_pr`num', "0410499", "041E099", "031509B", "031509C"
+> , "03150A6") | inlist(first_or_i10_pr`num', "03150A7", "03150A8", "03150A9", "03150AB", "03150AC") | inlist(first_or_i10_p
+> r`num', "03150J6", "03150J7", "03150J8", "03150J9", "03150JB") | inlist(first_or_i10_pr`num', "03150JC", "03150K6", "03150
+> K7", "03150K8", "03150K9") | inlist(first_or_i10_pr`num', "03150KB", "03150KC", "03150Z6", "03150Z7", "03150Z8") | inlist(
+> first_or_i10_pr`num', "03150Z9", "03150ZB", "03150ZC", "031609B", "031609C") | inlist(first_or_i10_pr`num', "03160A6", "03
+> 160A7", "03160A8", "03160A9", "03160AB") | inlist(first_or_i10_pr`num', "03160AC", "03160J6", "03160J7", "03160J8", "03160
+> J9") | inlist(first_or_i10_pr`num', "03160JB", "03160JC", "03160Z6", "03160Z7", "03160Z8") | inlist(first_or_i10_pr`num', 
+> "03160Z9", "03160ZB", "03160ZC", "041009B", "041009C") | inlist(first_or_i10_pr`num', "041009D", "041009F", "041009G", "04
+> 1009H", "041009J") | inlist(first_or_i10_pr`num', "041009K", "041009Q", "041009R", "04100A6", "04100A7") | inlist(first_or
+> _i10_pr`num', "04100A8", "04100A9", "04100AB", "04100AC", "04100AD") | inlist(first_or_i10_pr`num', "04100AF", "04100AG", 
+> "04100AH", "04100AJ", "04100AK") | inlist(first_or_i10_pr`num', "04100AQ", "04100AR", "04100J6", "04100J7", "04100J8") | i
+> nlist(first_or_i10_pr`num', "04100J9", "04100JB", "04100JC", "04100JD", "04100JF") | inlist(first_or_i10_pr`num', "04100JG
+> ", "04100JH", "04100JJ", "04100JK", "04100JQ") | inlist(first_or_i10_pr`num', "04100JR", "04100K6", "04100K7", "04100K8", 
+> "04100K9") | inlist(first_or_i10_pr`num', "04100KB", "04100KC", "04100KD", "04100KF", "04100KG") | inlist(first_or_i10_pr`
+> num', "04100KH", "04100KJ", "04100KK", "04100KQ", "04100KR") | inlist(first_or_i10_pr`num', "04100Z6", "04100Z7", "04100Z8
+> ", "04100Z9", "04100ZB") | inlist(first_or_i10_pr`num', "04100ZC", "04100ZD", "04100ZF", "04100ZG", "04100ZH") | inlist(fi
+> rst_or_i10_pr`num', "04100ZJ", "04100ZK", "04100ZQ", "04100ZR", "041049B") | inlist(first_or_i10_pr`num', "041049C", "0410
+> 49D", "041049F", "041049G", "041049H") | inlist(first_or_i10_pr`num', "041049J", "041049K", "041049Q", "041049R", "04104A6
+> ") | inlist(first_or_i10_pr`num', "04104A7", "04104A8", "04104A9", "04104AB", "04104AC") | inlist(first_or_i10_pr`num', "0
+> 4104AD", "04104AF", "04104AG", "04104AH", "04104AJ") | inlist(first_or_i10_pr`num', "04104AK", "04104AQ", "04104AR", "0410
+> 4J6", "04104J7") | inlist(first_or_i10_pr`num', "04104J8", "04104J9", "04104JB", "04104JC", "04104JD")
+  3. }
+(122 real changes made)
+(29 real changes made)
+(19 real changes made)
+(11 real changes made)
+(4 real changes made)
+(6 real changes made)
+(1 real change made)
+(1 real change made)
+(0 real changes made)
+(0 real changes made)
+(1 real change made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(1 real change made)
+(0 real changes made)
+(0 real changes made)
+
+. *Open Pt 3
+. foreach num of numlist 1/25 {
+  2.         replace revasc = 1 if inlist(first_or_i10_pr`num', "04104JF", "04104JG", "04104JH", "04104JJ", "04104JK") | inl
+> ist(first_or_i10_pr`num', "04104JQ", "04104JR", "04104K6", "04104K7", "04104K8") | inlist(first_or_i10_pr`num', "04104K9",
+>  "04104KB", "04104KC", "04104KD", "04104KF") | inlist(first_or_i10_pr`num', "04104ZB", "04104ZC", "04104ZD", "04104ZF", "0
+> 4104ZG") | inlist(first_or_i10_pr`num', "04104ZH", "04104ZJ", "04104ZK", "04104ZQ", "04104ZR") | inlist(first_or_i10_pr`nu
+> m', "041C096", "041C097", "041C098", "041C099", "041C09B") | inlist(first_or_i10_pr`num', "041C09C", "041C09D", "041C09F",
+>  "041C09G", "041C09H") | inlist(first_or_i10_pr`num', "041C09J", "041C09K", "041C09Q", "041C09R", "041C0A6") | inlist(firs
+> t_or_i10_pr`num', "041C0A7", "041C0A8", "041C0A9", "041C0AB", "041C0AC") | inlist(first_or_i10_pr`num', "041C0AD", "041C0A
+> F", "041C0AG", "041C0AH", "041C0AJ") | inlist(first_or_i10_pr`num', "041C0AK", "041C0AQ", "041C0AR", "041C0J6", "041C0J7")
+>  | inlist(first_or_i10_pr`num', "041C0J8", "041C0J9", "041C0JB", "041C0JC", "041C0JD") | inlist(first_or_i10_pr`num', "041
+> C0JF", "041C0JG", "041C0JH", "041C0JJ", "041C0JK") | inlist(first_or_i10_pr`num', "041C0JQ", "041C0JR", "041C0K6", "041C0K
+> 7", "041C0K8") | inlist(first_or_i10_pr`num', "041C0K9", "041C0KB", "041C0KC", "041C0KD", "041C0KF") | inlist(first_or_i10
+> _pr`num', "041C0KG", "041C0KH", "041C0KJ", "041C0KK", "041C0KQ") | inlist(first_or_i10_pr`num', "041C0KR", "041C0Z6", "041
+> C0Z7", "041C0Z8", "041C0Z9") | inlist(first_or_i10_pr`num', "041C0ZB", "041C0ZC", "041C0ZD", "041C0ZF", "041C0ZG") | inlis
+> t(first_or_i10_pr`num', "041C0ZH", "041C0ZJ", "041C0ZK", "041C0ZQ", "041C0ZR") | inlist(first_or_i10_pr`num', "041C496", "
+> 041C497", "041C498", "041C499", "041C49B") | inlist(first_or_i10_pr`num', "041C49C", "041C49D", "041C49F", "041C49G", "041
+> C49H") | inlist(first_or_i10_pr`num', "041C49J", "041C49K", "041C49Q", "041C49R", "041C4A6") | inlist(first_or_i10_pr`num'
+> , "041C4A7", "041C4A8", "041C4A9", "041C4AB", "041C4AC") | inlist(first_or_i10_pr`num', "041C4AD", "041C4AF", "041C4AG", "
+> 041C4AH", "041C4AJ") | inlist(first_or_i10_pr`num', "041C4AK", "041C4AQ", "041C4AR", "041C4J6", "041C4J7") | inlist(first_
+> or_i10_pr`num', "041C4J8", "041C4J9", "041C4JB", "041C4JC", "041C4JD") | inlist(first_or_i10_pr`num', "041C4JF", "041C4JG"
+> , "041C4JH", "041C4JJ", "041C4JK") | inlist(first_or_i10_pr`num', "041C4JQ", "041C4JR", "041C4K6", "041C4K7", "041C4K8") |
+>  inlist(first_or_i10_pr`num', "041C4K9", "041C4KB", "041C4KC", "041C4KD", "041C4KF") | inlist(first_or_i10_pr`num', "041C4
+> KG", "041C4KH", "041C4KJ", "041C4KK", "041C4KQ") | inlist(first_or_i10_pr`num', "041C4KR", "041C4Z6", "041C4Z7", "041C4Z8"
+> , "041C4Z9") | inlist(first_or_i10_pr`num', "041C4ZB", "041C4ZC", "041C4ZD", "041C4ZF", "041C4ZG") | inlist(first_or_i10_p
+> r`num', "041C4ZH", "041C4ZJ", "041C4ZK", "041C4ZQ", "041C4ZR") | inlist(first_or_i10_pr`num', "041D096", "041D097", "041D0
+> 98", "041D099", "041D09B") | inlist(first_or_i10_pr`num', "041D09C", "041D09D", "041D09F", "041D09G", "041D09H") | inlist(
+> first_or_i10_pr`num', "041D09J", "041D09K", "041D09Q", "041D09R", "041D0A6") | inlist(first_or_i10_pr`num', "041D0A7", "04
+> 1D0A8", "041D0A9", "041D0AB", "041D0AC") | inlist(first_or_i10_pr`num', "041D0AD", "041D0AF", "041D0AG", "041D0AH", "041D0
+> AJ") | inlist(first_or_i10_pr`num', "041D0AK", "041D0AQ", "041D0AR", "041D0J6", "041D0J7") | inlist(first_or_i10_pr`num', 
+> "041D0J8", "041D0J9", "041D0JB", "041D0JC", "041D0JD") | inlist(first_or_i10_pr`num', "041D0JF", "041D0JG", "041D0JH", "04
+> 1D0JJ", "041D0JK") | inlist(first_or_i10_pr`num', "041D0JQ", "041D0JR", "041D0K6", "041D0K7", "041D0K8") | inlist(first_or
+> _i10_pr`num', "041D0K9", "041D0KB", "041D0KC", "041D0KD", "041D0KF") | inlist(first_or_i10_pr`num', "041D0KG", "041D0KH", 
+> "041D0KJ", "041D0KK", "041D0KQ") | inlist(first_or_i10_pr`num', "041D0KR", "041D0Z6", "041D0Z7", "041D0Z8", "041D0Z9") | i
+> nlist(first_or_i10_pr`num', "041D0ZB", "041D0ZC", "041D0ZD", "041D0ZF", "041D0ZG") | inlist(first_or_i10_pr`num', "041D0ZH
+> ", "041D0ZJ", "041D0ZK", "041D0ZQ", "041D0ZR") | inlist(first_or_i10_pr`num', "041D496", "041D497", "041D498", "041D499", 
+> "041D49B") | inlist(first_or_i10_pr`num', "041D49C", "041D49D", "041D49F", "041D49G", "041D49H") | inlist(first_or_i10_pr`
+> num', "04104AD", "04104AF", "04104AG", "04104AH", "04104AJ") | inlist(first_or_i10_pr`num', "041D49J", "041D49K", "041D49Q
+> ", "041D49R", "041D4A6") | inlist(first_or_i10_pr`num', "041D4A7", "041D4A8", "041D4A9", "041D4AB", "041D4AC") | inlist(fi
+> rst_or_i10_pr`num', "041D4AD", "041D4AF", "041D4AG", "041D4AH", "041D4AJ") | inlist(first_or_i10_pr`num', "041D4AK", "041D
+> 4AQ", "041D4AR", "041D4J6", "041D4J7") | inlist(first_or_i10_pr`num', "041D4J8", "041D4J9", "041D4JB", "041D4JC", "041D4JD
+> ") | inlist(first_or_i10_pr`num', "041D4JF", "041D4JG", "041D4JH", "041D4JJ", "041D4JK") | inlist(first_or_i10_pr`num', "0
+> 41D4JQ", "041D4JR", "041D4K6", "041D4K7", "041D4K8")
+  3. }
+(10 real changes made)
+(6 real changes made)
+(1 real change made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(1 real change made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+
+. *Open Pt 4
+. foreach num of numlist 1/25 {
+  2.         replace revasc = 1 if inlist(first_or_i10_pr`num', "041D4K9", "041D4KB", "041D4KC", "041D4KD", "041D4KF") | inl
+> ist(first_or_i10_pr`num', "041D4KG", "041D4KH", "041D4KJ", "041D4KK", "041D4KQ") | inlist(first_or_i10_pr`num', "041D4KR",
+>  "041D4Z6", "041D4Z7", "041D4Z8", "041D4Z9") | inlist(first_or_i10_pr`num', "041D4ZB", "041D4ZC", "041D4ZD", "041D4ZF", "0
+> 41D4ZG") | inlist(first_or_i10_pr`num', "041D4ZH", "041D4ZJ", "041D4ZK", "041D4ZQ", "041D4ZR") | inlist(first_or_i10_pr`nu
+> m', "041E09B", "041E09C", "041E09D", "041E09F", "041E09G") | inlist(first_or_i10_pr`num', "041E09H", "041E09J", "041E09K",
+>  "041E09P", "041E09Q") | inlist(first_or_i10_pr`num', "041E0A9", "041E0AB", "041E0AC", "041E0AD", "041E0AF") | inlist(firs
+> t_or_i10_pr`num', "041E0AG", "041E0AH", "041E0AJ", "041E0AK", "041E0AP") | inlist(first_or_i10_pr`num', "041E0AQ", "041E0J
+> 9", "041E0JB", "041E0JC", "041E0JD") | inlist(first_or_i10_pr`num', "041E0JF", "041E0JG", "041E0JH", "041E0JJ", "041E0JK")
+>  | inlist(first_or_i10_pr`num', "041E0JP", "041E0JQ", "041E0K9", "041E0KB", "041E0KC") | inlist(first_or_i10_pr`num', "041
+> E0KD", "041E0KF", "041E0KG", "041E0KH", "041E0KJ") | inlist(first_or_i10_pr`num', "041E0KK", "041E0KP", "041E0KQ", "041E0Z
+> 9", "041E0ZB") | inlist(first_or_i10_pr`num', "041E0ZC", "041E0ZD", "041E0ZF", "041E0ZG", "041E0ZH") | inlist(first_or_i10
+> _pr`num', "041E0ZJ", "041E0ZK", "041E0ZP", "041E0ZQ", "041E499") | inlist(first_or_i10_pr`num', "041E49B", "041E49C", "041
+> E49D", "041E49F", "041E49G") | inlist(first_or_i10_pr`num', "041E49H", "041E49J", "041E49K", "041E49P", "041E49Q") | inlis
+> t(first_or_i10_pr`num', "041E4A9", "041E4AB", "041E4AC", "041E4AD", "041E4AF") | inlist(first_or_i10_pr`num', "041E4AG", "
+> 041E4AH", "041E4AJ", "041E4AK", "041E4AP") | inlist(first_or_i10_pr`num', "041E4AQ", "041E4J9", "041E4JB", "041E4JC", "041
+> E4JD") | inlist(first_or_i10_pr`num', "041E4JF", "041E4JG", "041E4JH", "041E4JJ", "041E4JK") | inlist(first_or_i10_pr`num'
+> , "041E4JP", "041E4JQ", "041E4K9", "041E4KB", "041E4KC") | inlist(first_or_i10_pr`num', "041E4KD", "041E4KF", "041E4KG", "
+> 041E4KH", "041E4KJ") | inlist(first_or_i10_pr`num', "041E4KK", "041E4KP", "041E4KQ", "041E4Z9", "041E4ZB") | inlist(first_
+> or_i10_pr`num', "041E4ZC", "041E4ZD", "041E4ZF", "041E4ZG", "041E4ZH") | inlist(first_or_i10_pr`num', "041E4ZJ", "041E4ZK"
+> , "041E4ZP", "041E4ZQ", "041F099") | inlist(first_or_i10_pr`num', "041F09B", "041F09C", "041F09D", "041F09F", "041F09G") |
+>  inlist(first_or_i10_pr`num', "041F09H", "041F09J", "041F09K", "041F09P", "041F09Q") | inlist(first_or_i10_pr`num', "041F0
+> A9", "041F0AB", "041F0AC", "041F0AD", "041F0AF") | inlist(first_or_i10_pr`num', "041F0AG", "041F0AH", "041F0AJ", "041F0AK"
+> , "041F0AP") | inlist(first_or_i10_pr`num', "041F0AQ", "041F0J9", "041F0JB", "041F0JC", "041F0JD") | inlist(first_or_i10_p
+> r`num', "041F0JF", "041F0JG", "041F0JH", "041F0JJ", "041F0JK") | inlist(first_or_i10_pr`num', "041F0JP", "041F0JQ", "041F0
+> K9", "041F0KB", "041F0KC") | inlist(first_or_i10_pr`num', "041F0KD", "041F0KF", "041F0KG", "041F0KH", "041F0KJ") | inlist(
+> first_or_i10_pr`num', "041F0KK", "041F0KP", "041F0KQ", "041F0Z9", "041F0ZB") | inlist(first_or_i10_pr`num', "041F0ZC", "04
+> 1F0ZD", "041F0ZF", "041F0ZG", "041F0ZH") | inlist(first_or_i10_pr`num', "041F0ZJ", "041F0ZK", "041F0ZP", "041F0ZQ", "041F4
+> 99") | inlist(first_or_i10_pr`num', "041F49B", "041F49C", "041F49D", "041F49F", "041F49G") | inlist(first_or_i10_pr`num', 
+> "041F49H", "041F49J", "041F49K", "041F49P", "041F49Q") | inlist(first_or_i10_pr`num', "041F4A9", "041F4AB", "041F4AC", "04
+> 1F4AD", "041F4AF") | inlist(first_or_i10_pr`num', "041F4AG", "041F4AH", "041F4AJ", "041F4AK", "041F4AP") | inlist(first_or
+> _i10_pr`num', "041F4AQ", "041F4J9", "041F4JB", "041F4JC", "041F4JD") | inlist(first_or_i10_pr`num', "041F4JF", "041F4JG", 
+> "041F4JH", "041F4JJ", "041F4JK") | inlist(first_or_i10_pr`num', "041F4JP", "041F4JQ", "041F4K9", "041F4KB", "041F4KC") | i
+> nlist(first_or_i10_pr`num', "041F4KD", "041F4KF", "041F4KG", "041F4KH", "041F4KJ") | inlist(first_or_i10_pr`num', "041F4KK
+> ", "041F4KP", "041F4KQ", "041F4Z9", "041F4ZB") | inlist(first_or_i10_pr`num', "041F4ZJ", "041F4ZK", "041F4ZP", "041F4ZQ")
+  3. }
+(2 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+
+. 
+. *Endo Pt 1
+. foreach num of numlist 1/25 {
+  2.         replace revasc = 2 if inlist(first_or_i10_pr`num', "047C041", "047C04Z", "047C05Z", "047C06Z", "047C07Z") | inl
+> ist(first_or_i10_pr`num', "047C0D1") | inlist(first_or_i10_pr`num', "047C0DZ", "047C0EZ", "047C0FZ") | inlist(first_or_i10
+> _pr`num', "047C0GZ", "047C0Z1", "047C0ZZ", "047C341", "047C34Z") | inlist(first_or_i10_pr`num', "047C35Z", "047C36Z", "047
+> C37Z", "047C3D1", "047C3DZ") | inlist(first_or_i10_pr`num', "047C3EZ", "047C3FZ", "047C3GZ", "047C3Z1", "047C3ZZ") | inlis
+> t(first_or_i10_pr`num', "047C441", "047C44Z", "047C45Z", "047C46Z", "047C47Z") | inlist(first_or_i10_pr`num', "047C4D1", "
+> 047C4DZ", "047C4EZ", "047C4FZ", "047C4GZ") | inlist(first_or_i10_pr`num', "047C4Z1", "047C4ZZ", "047D041", "047D04Z", "047
+> D05Z") | inlist(first_or_i10_pr`num', "047D06Z", "047D07Z", "047D0D1", "047D0DZ", "047D0EZ") | inlist(first_or_i10_pr`num'
+> , "047D0FZ", "047D0GZ", "047D0Z1", "047D0ZZ", "047D341") | inlist(first_or_i10_pr`num', "047D34Z", "047D35Z", "047D36Z", "
+> 047D37Z", "047D3D1") | inlist(first_or_i10_pr`num', "047D3DZ", "047D3EZ", "047D3FZ", "047D3GZ", "047D3Z1") | inlist(first_
+> or_i10_pr`num', "047D3ZZ", "047D441", "047D44Z", "047D45Z", "047D46Z") | inlist(first_or_i10_pr`num', "047D47Z", "047D4D1"
+> , "047D4DZ", "047D4EZ", "047D4FZ") | inlist(first_or_i10_pr`num', "047D4GZ", "047D4Z1", "047D4ZZ", "047E041", "047E04Z") |
+>  inlist(first_or_i10_pr`num', "047E05Z", "047E06Z", "047E07Z", "047E0D1", "047E0DZ") | inlist(first_or_i10_pr`num', "047E0
+> EZ", "047E0FZ", "047E0GZ", "047E0Z1", "047E0ZZ") | inlist(first_or_i10_pr`num', "047E341", "047E34Z", "047E35Z", "047E36Z"
+> , "047E37Z") | inlist(first_or_i10_pr`num', "047E3D1", "047E3DZ", "047E3EZ", "047E3FZ", "047E3GZ") | inlist(first_or_i10_p
+> r`num', "047E3Z1", "047E3ZZ", "047E441", "047E44Z", "047E45Z") | inlist(first_or_i10_pr`num', "047E46Z", "047E47Z", "047E4
+> D1", "047E4DZ", "047E4EZ") | inlist(first_or_i10_pr`num', "047E4FZ", "047E4GZ", "047E4Z1", "047E4ZZ", "047F041") | inlist(
+> first_or_i10_pr`num', "047F04Z", "047F05Z", "047F06Z", "047F07Z", "047F0D1") | inlist(first_or_i10_pr`num', "047F0DZ", "04
+> 7F0EZ", "047F0FZ", "047F0GZ", "047F0Z1") | inlist(first_or_i10_pr`num', "047F0ZZ", "047F341", "047F34Z", "047F35Z", "047F3
+> 6Z") | inlist(first_or_i10_pr`num', "047F37Z", "047F3D1", "047F3DZ", "047F3EZ", "047F3FZ") | inlist(first_or_i10_pr`num', 
+> "047F3GZ", "047F3Z1", "047F3ZZ", "047F441", "047F44Z") | inlist(first_or_i10_pr`num', "047F45Z", "047F46Z", "047F47Z", "04
+> 7F4D1", "047F4DZ") | inlist(first_or_i10_pr`num', "047F4EZ", "047F4FZ", "047F4GZ", "047F4Z1", "047F4ZZ") | inlist(first_or
+> _i10_pr`num', "047H041", "047H04Z", "047H05Z", "047H06Z", "047H07Z") | inlist(first_or_i10_pr`num', "047H0D1", "047H0DZ", 
+> "047H0EZ", "047H0FZ", "047H0GZ") | inlist(first_or_i10_pr`num', "047H0Z1", "047H0ZZ", "047H341", "047H34Z", "047H35Z") | i
+> nlist(first_or_i10_pr`num', "047H36Z", "047H37Z", "047H3D1", "047H3DZ", "047H3EZ") | inlist(first_or_i10_pr`num', "047H3FZ
+> ", "047H3GZ", "047H3Z1", "047H3ZZ", "047H441") | inlist(first_or_i10_pr`num', "047H44Z", "047H45Z", "047H46Z", "047H47Z", 
+> "047H4D1") | inlist(first_or_i10_pr`num', "047H4DZ", "047H4EZ", "047H4FZ", "047H4GZ", "047H4Z1") | inlist(first_or_i10_pr`
+> num', "047H4ZZ", "047J041", "047J04Z", "047J05Z", "047J06Z") | inlist(first_or_i10_pr`num', "047J07Z", "047J0D1", "047J0DZ
+> ", "047J0EZ", "047J0FZ") | inlist(first_or_i10_pr`num', "047J0GZ", "047J0Z1", "047J0ZZ", "047J341", "047J34Z") | inlist(fi
+> rst_or_i10_pr`num', "047J35Z", "047J36Z", "047J37Z", "047J3D1", "047J3DZ") | inlist(first_or_i10_pr`num', "047J3EZ", "047J
+> 3FZ", "047J3GZ", "047J3Z1", "047J3ZZ") | inlist(first_or_i10_pr`num', "047J441", "047J44Z", "047J45Z", "047J46Z", "047J47Z
+> ") | inlist(first_or_i10_pr`num', "047J4D1", "047J4DZ", "047J4EZ", "047J4FZ", "047J4GZ") | inlist(first_or_i10_pr`num', "0
+> 47J4Z1", "047J4ZZ")
+  3. }
+(130 real changes made)
+(57 real changes made)
+(53 real changes made)
+(33 real changes made)
+(10 real changes made)
+(7 real changes made)
+(12 real changes made)
+(6 real changes made)
+(3 real changes made)
+(2 real changes made)
+(1 real change made)
+(2 real changes made)
+(0 real changes made)
+(1 real change made)
+(1 real change made)
+(1 real change made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+
+. *Endo Pt 2
+. foreach num of numlist 1/25 {
+  2.         replace revasc = 2 if inlist(first_or_i10_pr`num', "047K041", "047K04Z", "047K05Z", "047K06Z", "047K07Z") | inl
+> ist(first_or_i10_pr`num', "047K0D1") | inlist(first_or_i10_pr`num', "047K0DZ", "047K0EZ", "047K0FZ") | inlist(first_or_i10
+> _pr`num', "047K0GZ", "047K0Z1", "047K0ZZ", "047K341", "047K34Z") | inlist(first_or_i10_pr`num', "047K35Z", "047K36Z", "047
+> K37Z", "047K3D1", "047K3DZ") | inlist(first_or_i10_pr`num', "047K3EZ", "047K3FZ", "047K3GZ", "047K3Z1", "047K3ZZ") | inlis
+> t(first_or_i10_pr`num', "047K441", "047K44Z", "047K45Z", "047K46Z", "047K47Z") | inlist(first_or_i10_pr`num', "047K4D1", "
+> 047K4DZ", "047K4EZ", "047K4FZ", "047K4GZ") | inlist(first_or_i10_pr`num', "047K4Z1", "047K4ZZ", "047L041", "047L04Z", "047
+> L05Z") | inlist(first_or_i10_pr`num', "047L06Z", "047L07Z", "047L0D1", "047L0DZ", "047L0EZ") | inlist(first_or_i10_pr`num'
+> , "047L0FZ", "047L0GZ", "047L0Z1", "047L0ZZ", "047L341") | inlist(first_or_i10_pr`num', "047L34Z", "047L35Z", "047L36Z", "
+> 047L37Z", "047L3D1") | inlist(first_or_i10_pr`num', "047L3DZ", "047L3EZ", "047L3FZ", "047L3GZ", "047L3Z1") | inlist(first_
+> or_i10_pr`num', "047L3ZZ", "047L441", "047L44Z", "047L45Z", "047L46Z") | inlist(first_or_i10_pr`num', "047L47Z", "047L4D1"
+> , "047L4DZ", "047L4EZ", "047L4FZ") | inlist(first_or_i10_pr`num', "047L4GZ", "047L4Z1", "047L4ZZ", "047M041", "047M04Z") |
+>  inlist(first_or_i10_pr`num', "047M05Z", "047M06Z", "047M07Z", "047M0D1", "047M0DZ") | inlist(first_or_i10_pr`num', "047M0
+> EZ", "047M0FZ", "047M0GZ", "047M0Z1", "047M0ZZ") | inlist(first_or_i10_pr`num', "047M341", "047M34Z", "047M35Z", "047M36Z"
+> , "047M37Z") | inlist(first_or_i10_pr`num', "047M3D1", "047M3DZ", "047M3EZ", "047M3FZ", "047M3GZ") | inlist(first_or_i10_p
+> r`num', "047M3Z1", "047M3ZZ", "047M441", "047M44Z", "047M45Z") | inlist(first_or_i10_pr`num', "047M46Z", "047M47Z", "047M4
+> D1", "047M4DZ", "047M4EZ") | inlist(first_or_i10_pr`num', "047M4FZ", "047M4GZ", "047M4Z1", "047M4ZZ", "047N041") | inlist(
+> first_or_i10_pr`num', "047N04Z", "047N05Z", "047N06Z", "047N07Z", "047N0D1") | inlist(first_or_i10_pr`num', "047N0DZ", "04
+> 7N0EZ", "047N0FZ", "047N0GZ", "047N0Z1") | inlist(first_or_i10_pr`num', "047N0ZZ", "047N341", "047N34Z", "047N35Z", "047N3
+> 6Z") | inlist(first_or_i10_pr`num', "047N37Z", "047N3D1", "047N3DZ", "047N3EZ", "047N3FZ") | inlist(first_or_i10_pr`num', 
+> "047N3GZ", "047N3Z1", "047N3ZZ", "047N441", "047N44Z") | inlist(first_or_i10_pr`num', "047N45Z", "047N46Z", "047N47Z", "04
+> 7N4D1", "047N4DZ") | inlist(first_or_i10_pr`num', "047N4EZ", "047N4FZ", "047N4GZ", "047N4Z1", "047N4ZZ") | inlist(first_or
+> _i10_pr`num', "047P041", "047P04Z", "047P05Z", "047P06Z", "047P07Z") | inlist(first_or_i10_pr`num', "047P0D1", "047P0DZ", 
+> "047P0EZ", "047P0FZ", "047P0GZ") | inlist(first_or_i10_pr`num', "047P0Z1", "047P0ZZ", "047P341", "047P34Z", "047P35Z") | i
+> nlist(first_or_i10_pr`num', "047P36Z", "047P37Z", "047P3D1", "047P3DZ", "047P3EZ") | inlist(first_or_i10_pr`num', "047P3FZ
+> ", "047P3GZ", "047P3Z1", "047P3ZZ", "047P441") | inlist(first_or_i10_pr`num', "047P44Z", "047P45Z", "047P46Z", "047P47Z", 
+> "047P4D1") | inlist(first_or_i10_pr`num', "047P4DZ", "047P4EZ", "047P4FZ", "047P4GZ", "047P4Z1") | inlist(first_or_i10_pr`
+> num', "047P4ZZ", "047Q041", "047Q04Z", "047Q05Z", "047Q06Z") | inlist(first_or_i10_pr`num', "047Q07Z", "047Q0D1", "047Q0DZ
+> ", "047Q0EZ", "047Q0FZ") | inlist(first_or_i10_pr`num', "047Q0GZ", "047Q0Z1", "047Q0ZZ", "047Q341", "047Q34Z") | inlist(fi
+> rst_or_i10_pr`num', "047Q35Z", "047Q36Z", "047Q37Z", "047Q3D1", "047Q3DZ") | inlist(first_or_i10_pr`num', "047Q3EZ", "047Q
+> 3FZ", "047Q3GZ", "047Q3Z1", "047Q3ZZ") | inlist(first_or_i10_pr`num', "047Q441", "047Q44Z", "047Q45Z", "047Q46Z", "047Q47Z
+> ") | inlist(first_or_i10_pr`num', "047Q4D1", "047Q4DZ", "047Q4EZ", "047Q4FZ", "047Q4GZ") | inlist(first_or_i10_pr`num', "0
+> 47Q4Z1", "047Q4ZZ") | inlist(first_or_i10_pr`num', "047R041", "047R04Z", "047R05Z", "047R06Z", "047R07Z") | inlist(first_o
+> r_i10_pr`num', "047R0D1") | inlist(first_or_i10_pr`num', "047R0DZ", "047R0EZ", "047R0FZ") | inlist(first_or_i10_pr`num', "
+> 047R0GZ", "047R0Z1", "047R0ZZ", "047R341", "047R34Z") | inlist(first_or_i10_pr`num', "047R35Z", "047R36Z", "047R37Z", "047
+> R3D1", "047R3DZ") | inlist(first_or_i10_pr`num', "047R3EZ", "047R3FZ", "047R3GZ", "047R3Z1", "047R3ZZ") | inlist(first_or_
+> i10_pr`num', "047R441", "047R44Z", "047R45Z", "047R46Z", "047R47Z") | inlist(first_or_i10_pr`num', "047R4D1", "047R4DZ", "
+> 047R4EZ", "047R4FZ", "047R4GZ") | inlist(first_or_i10_pr`num', "047R4Z1", "047R4ZZ", "047S041", "047S04Z", "047S05Z") | in
+> list(first_or_i10_pr`num', "047S06Z", "047S07Z", "047S0D1", "047S0DZ", "047S0EZ") | inlist(first_or_i10_pr`num', "047S0FZ"
+> , "047S0GZ", "047S0Z1", "047S0ZZ", "047S341") | inlist(first_or_i10_pr`num', "047S34Z", "047S35Z", "047S36Z", "047S37Z", "
+> 047S3D1") | inlist(first_or_i10_pr`num', "047S3DZ", "047S3EZ", "047S3FZ", "047S3GZ", "047S3Z1") | inlist(first_or_i10_pr`n
+> um', "047S3ZZ", "047S441", "047S44Z", "047S45Z", "047S46Z") | inlist(first_or_i10_pr`num', "047S47Z", "047S4D1", "047S4DZ"
+> , "047S4EZ", "047S4FZ") | inlist(first_or_i10_pr`num', "047S4GZ", "047S4Z1", "047S4ZZ", "047T041", "047T04Z") | inlist(fir
+> st_or_i10_pr`num', "047T05Z", "047T06Z", "047T07Z", "047T0D1", "047T0DZ") | inlist(first_or_i10_pr`num', "047T0EZ", "047T0
+> FZ", "047T0GZ", "047T0Z1", "047T0ZZ") | inlist(first_or_i10_pr`num', "047T341", "047T34Z", "047T35Z", "047T36Z", "047T37Z"
+> ) | inlist(first_or_i10_pr`num', "047T3D1", "047T3DZ", "047T3EZ", "047T3FZ", "047T3GZ") | inlist(first_or_i10_pr`num', "04
+> 7T3Z1", "047T3ZZ", "047T441", "047T44Z", "047T45Z") | inlist(first_or_i10_pr`num', "047T46Z", "047T47Z", "047T4D1", "047T4
+> DZ", "047T4EZ") | inlist(first_or_i10_pr`num', "047T4FZ", "047T4GZ", "047T4Z1", "047T4ZZ", "047U041") | inlist(first_or_i1
+> 0_pr`num', "047U04Z", "047U05Z", "047U06Z", "047U07Z", "047U0D1") | inlist(first_or_i10_pr`num', "047U0DZ", "047U0EZ", "04
+> 7U0FZ", "047U0GZ", "047U0Z1") | inlist(first_or_i10_pr`num', "047U0ZZ", "047U341", "047U34Z", "047U35Z", "047U36Z") | inli
+> st(first_or_i10_pr`num', "047U37Z", "047U3D1", "047U3DZ", "047U3EZ", "047U3FZ") | inlist(first_or_i10_pr`num', "047U3GZ", 
+> "047U3Z1", "047U3ZZ", "047U441", "047U44Z") | inlist(first_or_i10_pr`num', "047U45Z", "047U46Z", "047U47Z", "047U4D1", "04
+> 7U4DZ") | inlist(first_or_i10_pr`num', "047U4EZ", "047U4FZ", "047U4GZ", "047U4Z1", "047U4ZZ") | inlist(first_or_i10_pr`num
+> ', "047V041", "047V04Z", "047V05Z", "047V06Z", "047V07Z") | inlist(first_or_i10_pr`num', "047V0D1", "047V0DZ", "047V0EZ", 
+> "047V0FZ", "047V0GZ") | inlist(first_or_i10_pr`num', "047V0Z1", "047V0ZZ", "047V341", "047V34Z", "047V35Z") | inlist(first
+> _or_i10_pr`num', "047V36Z", "047V37Z", "047V3D1", "047V3DZ", "047V3EZ") | inlist(first_or_i10_pr`num', "047V3FZ", "047V3GZ
+> ", "047V3Z1", "047V3ZZ", "047V441") | inlist(first_or_i10_pr`num', "047V44Z", "047V45Z", "047V46Z", "047V47Z", "047V4D1") 
+> | inlist(first_or_i10_pr`num', "047V4DZ", "047V4EZ", "047P4FZ", "047P4GZ", "047V4Z1") | inlist(first_or_i10_pr`num', "047V
+> 4ZZ", "047W041", "047W04Z", "047W05Z", "047W06Z") | inlist(first_or_i10_pr`num', "047W07Z", "047W0D1", "047W0DZ", "047W0EZ
+> ", "047W0FZ") | inlist(first_or_i10_pr`num', "047W0GZ", "047W0Z1", "047W0ZZ", "047W341", "047W34Z") | inlist(first_or_i10_
+> pr`num', "047W35Z", "047W36Z", "047W37Z", "047W3D1", "047W3DZ") | inlist(first_or_i10_pr`num', "047W3EZ", "047W3FZ", "047W
+> 3GZ", "047W3Z1", "047W3ZZ") | inlist(first_or_i10_pr`num', "047W441", "047W44Z", "047W45Z", "047W46Z", "047W47Z") | inlist
+> (first_or_i10_pr`num', "047W4D1", "047W4DZ", "047W4EZ", "047W4FZ", "047W4GZ") | inlist(first_or_i10_pr`num', "047W4Z1", "0
+> 47W4ZZ") | inlist(first_or_i10_pr`num',  "047Y041", "047Y04Z") | inlist(first_or_i10_pr`num', "047Y0D1", "047Y0DZ") | inli
+> st(first_or_i10_pr`num', "047Y0Z1", "047Y0ZZ", "047Y341", "047Y34Z") | inlist(first_or_i10_pr`num', "047Y3D1", "047Y3DZ") 
+> | inlist(first_or_i10_pr`num', "047Y3Z1", "047Y3ZZ") | inlist(first_or_i10_pr`num', "047Y441", "047Y44Z") | inlist(first_o
+> r_i10_pr`num', "047Y4D1", "047Y4DZ") | inlist(first_or_i10_pr`num', "047Y4Z1", "047Y4ZZ")
+  3. }
+(677 real changes made)
+(325 real changes made)
+(171 real changes made)
+(82 real changes made)
+(48 real changes made)
+(33 real changes made)
+(17 real changes made)
+(12 real changes made)
+(3 real changes made)
+(6 real changes made)
+(2 real changes made)
+(2 real changes made)
+(1 real change made)
+(1 real change made)
+(0 real changes made)
+(1 real change made)
+(0 real changes made)
+(0 real changes made)
+(1 real change made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+
+. 
+. **generating return to OR variable
+. *this is assuming that people had a first revasc and then returned to the OR
+. foreach num of numlist 1/25 {
+  2.         gen rtor_i10_pr`num' = i10_pr`num' if first_or_day<prday`num' & (revasc==1 | revasc==2)
+  3. }
+(1,877,321 missing values generated)
+(1,877,262 missing values generated)
+(1,877,227 missing values generated)
+(1,877,188 missing values generated)
+(1,877,147 missing values generated)
+(1,877,195 missing values generated)
+(1,877,288 missing values generated)
+(1,877,361 missing values generated)
+(1,877,398 missing values generated)
+(1,877,440 missing values generated)
+(1,877,493 missing values generated)
+(1,877,537 missing values generated)
+(1,877,566 missing values generated)
+(1,877,577 missing values generated)
+(1,877,607 missing values generated)
+(1,877,645 missing values generated)
+(1,877,661 missing values generated)
+(1,877,675 missing values generated)
+(1,877,680 missing values generated)
+(1,877,689 missing values generated)
+(1,877,692 missing values generated)
+(1,877,695 missing values generated)
+(1,877,702 missing values generated)
+(1,877,707 missing values generated)
+(1,877,710 missing values generated)
+
+. 
+. **now confirm that the patient is returning to the OR for amputation AFTER revasc
+. foreach num of numlist 1/25 {
+  2.         gen rtor_amp`num'= rtor_i10_pr`num' if inlist(i10_pr`num', "0Y620ZZ", "0Y630ZZ", "0Y640ZZ", "0Y670ZZ", "0Y680ZZ
+> ") | inlist(i10_pr`num', "0Y6C0Z1", "0Y6C0Z2", "0Y6C0Z3", "0Y6D0Z1", "0Y6D0Z2") | inlist(i10_pr`num', "Y6D0Z3", "0Y6F0ZZ",
+>  "0Y6G0ZZ", "0Y6H0Z1", "0Y6H0Z2") | inlist(i10_pr`num', "0Y6H0Z3", "0Y6J0Z1",  "0Y6J0Z2" , "0Y6J0Z3") | inlist(i10_pr`num'
+> , "0Y6M0Z0", "0Y6M0Z4" , "0Y6M0Z5", "0Y6M0Z6", "0Y6M0Z7", "0Y6M0Z8") | inlist(i10_pr`num', "0Y6M0Z9", "0Y6M0ZB" , "0Y6M0ZC
+> ", "0Y6M0ZD", "0Y6M0ZF", "0Y6N0Z0") | inlist(i10_pr`num', "0Y6N0Z4", "0Y6N0Z5" , "0Y6N0Z6", "0Y6N0Z7", "0Y6N0Z8", "0Y6N0Z9
+> ")  | inlist(i10_pr`num', "0Y6N0ZB", "0Y6N0ZC" , "0Y6N0ZD", "0Y6N0ZF")
+  3. }
+(1,877,562 missing values generated)
+(1,877,629 missing values generated)
+(1,877,626 missing values generated)
+(1,877,628 missing values generated)
+(1,877,628 missing values generated)
+(1,877,646 missing values generated)
+(1,877,675 missing values generated)
+(1,877,694 missing values generated)
+(1,877,698 missing values generated)
+(1,877,700 missing values generated)
+(1,877,709 missing values generated)
+(1,877,714 missing values generated)
+(1,877,717 missing values generated)
+(1,877,715 missing values generated)
+(1,877,716 missing values generated)
+(1,877,720 missing values generated)
+(1,877,723 missing values generated)
+(1,877,723 missing values generated)
+(1,877,723 missing values generated)
+(1,877,723 missing values generated)
+(1,877,723 missing values generated)
+(1,877,723 missing values generated)
+(1,877,724 missing values generated)
+(1,877,722 missing values generated)
+(1,877,722 missing values generated)
+
+. **now confirm that the patient is returning to the OR for amputation if never revasced
+. foreach num of numlist 1/25 {
+  2.         replace rtor_amp`num' = i10_pr`num' if revasc==. & inlist(i10_pr`num', "0Y620ZZ", "0Y630ZZ", "0Y640ZZ", "0Y670Z
+> Z", "0Y680ZZ") | inlist(i10_pr`num', "0Y6C0Z1", "0Y6C0Z2", "0Y6C0Z3", "0Y6D0Z1", "0Y6D0Z2") | inlist(i10_pr`num', "Y6D0Z3"
+> , "0Y6F0ZZ", "0Y6G0ZZ", "0Y6H0Z1", "0Y6H0Z2") | inlist(i10_pr`num', "0Y6H0Z3", "0Y6J0Z1",  "0Y6J0Z2" , "0Y6J0Z3") | inlist
+> (i10_pr`num', "0Y6M0Z0", "0Y6M0Z4" , "0Y6M0Z5", "0Y6M0Z6", "0Y6M0Z7", "0Y6M0Z8") | inlist(i10_pr`num', "0Y6M0Z9", "0Y6M0ZB
+> " , "0Y6M0ZC", "0Y6M0ZD", "0Y6M0ZF", "0Y6N0Z0") | inlist(i10_pr`num', "0Y6N0Z4", "0Y6N0Z5" , "0Y6N0Z6", "0Y6N0Z7", "0Y6N0Z
+> 8", "0Y6N0Z9")  | inlist(i10_pr`num', "0Y6N0ZB", "0Y6N0ZC" , "0Y6N0ZD", "0Y6N0ZF")
+  3. }
+(9,611 real changes made)
+(4,249 real changes made)
+(2,595 real changes made)
+(2,197 real changes made)
+(1,859 real changes made)
+(1,044 real changes made)
+(646 real changes made)
+(469 real changes made)
+(332 real changes made)
+(244 real changes made)
+(164 real changes made)
+(118 real changes made)
+(80 real changes made)
+(63 real changes made)
+(47 real changes made)
+(35 real changes made)
+(27 real changes made)
+(21 real changes made)
+(15 real changes made)
+(10 real changes made)
+(10 real changes made)
+(8 real changes made)
+variable rtor_amp23 was str1 now str7
+(10 real changes made)
+(9 real changes made)
+(3 real changes made)
+
+. 
+. **censoring variable for cox: amp
+. gen cens_rtor_amp=0
+
+. foreach num of numlist 1/25{
+  2. replace cens_rtor_amp=1 if rtor_amp`num'!=""
+  3. }
+(9,773 real changes made)
+(1,486 real changes made)
+(634 real changes made)
+(370 real changes made)
+(211 real changes made)
+(119 real changes made)
+(76 real changes made)
+(44 real changes made)
+(34 real changes made)
+(26 real changes made)
+(20 real changes made)
+(15 real changes made)
+(13 real changes made)
+(9 real changes made)
+(5 real changes made)
+(8 real changes made)
+(5 real changes made)
+(4 real changes made)
+(2 real changes made)
+(2 real changes made)
+(1 real change made)
+(1 real change made)
+(2 real changes made)
+(1 real change made)
+(4 real changes made)
+
+. 
+. **amp day
+. foreach num of numlist 1/25{
+  2.         gen amp_day`num'=prday`num' if rtor_amp`num'!=""
+  3. }
+(1,868,292 missing values generated)
+(1,873,593 missing values generated)
+(1,875,148 missing values generated)
+(1,875,523 missing values generated)
+(1,875,846 missing values generated)
+(1,876,641 missing values generated)
+(1,877,060 missing values generated)
+(1,877,247 missing values generated)
+(1,877,380 missing values generated)
+(1,877,464 missing values generated)
+(1,877,554 missing values generated)
+(1,877,602 missing values generated)
+(1,877,644 missing values generated)
+(1,877,655 missing values generated)
+(1,877,671 missing values generated)
+(1,877,687 missing values generated)
+(1,877,696 missing values generated)
+(1,877,702 missing values generated)
+(1,877,708 missing values generated)
+(1,877,713 missing values generated)
+(1,877,713 missing values generated)
+(1,877,716 missing values generated)
+(1,877,715 missing values generated)
+(1,877,714 missing values generated)
+(1,877,719 missing values generated)
+
+. 
+. **censoring date
+. gen event_day=.
+(1,877,724 missing values generated)
+
+. foreach num of numlist 1/25 {
+  2. replace event_day=amp_day`num' if amp_day`num'<event_day
+  3. }
+(9,432 real changes made)
+(1,737 real changes made)
+(725 real changes made)
+(425 real changes made)
+(244 real changes made)
+(145 real changes made)
+(90 real changes made)
+(52 real changes made)
+(42 real changes made)
+(31 real changes made)
+(19 real changes made)
+(17 real changes made)
+(13 real changes made)
+(8 real changes made)
+(6 real changes made)
+(8 real changes made)
+(6 real changes made)
+(4 real changes made)
+(2 real changes made)
+(2 real changes made)
+(1 real change made)
+(1 real change made)
+(2 real changes made)
+(2 real changes made)
+(4 real changes made)
+
+. *LOS = death + discharge
+. replace event_day=los if event_day==.
+(1,865,279 real changes made)
+
+. 
+. **tell stata this is time to event data for amputation
+. stset event_day, failure(cens_rtor_amp==1)
+
+Survival-time data settings
+
+         Failure event: cens_rtor_amp==1
+Observed time interval: (0, event_day]
+     Exit on or before: failure
+
+--------------------------------------------------------------------------
+  1,877,724  total observations
+         53  event time missing (event_day>=.)              PROBABLE ERROR
+     28,286  observations end on or before enter()
+--------------------------------------------------------------------------
+  1,849,385  observations remaining, representing
+     11,175  failures in single-record/single-failure data
+   14477401  total analysis time at risk and under observation
+                                                At risk from t =         0
+                                     Earliest observed entry t =         0
+                                          Last observed exit t =       365
+
+. 
+. svy: prop cens_rtor_amp if allPAD==0
+(running proportion on estimation sample)
+
+Survey: Proportion estimation
+
+Number of strata =     1            Number of obs   = 1,699,884
+Number of PSUs   = 4,919            Population size = 8,499,418
+                                    Design df       =     4,918
+
+---------------------------------------------------------------
+              |             Linearized            Logit
+              | Proportion   std. err.     [95% conf. interval]
+--------------+------------------------------------------------
+cens_rtor_amp |
+           0  |   .9946255   .0000635      .9944995    .9947487
+           1  |   .0053745   .0000635      .0052513    .0055005
+---------------------------------------------------------------
+
+. svy: prop cens_rtor_amp if allPAD==1
+(running proportion on estimation sample)
+
+Survey: Proportion estimation
+
+Number of strata =     1           Number of obs   =    177,840
+Number of PSUs   = 4,749           Population size = 889,199.86
+                                   Design df       =      4,748
+
+---------------------------------------------------------------
+              |             Linearized            Logit
+              | Proportion   std. err.     [95% conf. interval]
+--------------+------------------------------------------------
+cens_rtor_amp |
+           0  |   .9790317   .0003794      .9782749    .9797627
+           1  |   .0209683   .0003794      .0202373    .0217251
+---------------------------------------------------------------
+
+. svy: tab allPAD cens_rtor_amp
+(running tabulate on estimation sample)
+
+Number of strata =     1                           Number of obs   = 1,877,724
+Number of PSUs   = 4,920                           Population size = 9,388,618
+                                                   Design df       =     4,919
+
+-------------------------------
+          |    cens_rtor_amp   
+   allPAD |     0      1  Total
+----------+--------------------
+        0 | .9004  .0049  .9053
+        1 | .0927   .002  .0947
+          | 
+    Total | .9931  .0069      1
+-------------------------------
+Key: Cell proportion
+
+  Pearson:
+    Uncorrected   chi2(1)         = 5753.4579
+    Design-based  F(1, 4919)      = 4941.4671     P = 0.0000
+
+. 
+. svy: prop cens_rtor_amp if cat==3
+(running proportion on estimation sample)
+
+Survey: Proportion estimation
+
+Number of strata =     1            Number of obs   =   488,337
+Number of PSUs   = 4,860            Population size = 2,441,685
+                                    Design df       =     4,859
+
+---------------------------------------------------------------
+              |             Linearized            Logit
+              | Proportion   std. err.     [95% conf. interval]
+--------------+------------------------------------------------
+cens_rtor_amp |
+           0  |   .9943727   .0001123      .9941482    .9945887
+           1  |   .0056273   .0001123      .0054113    .0058518
+---------------------------------------------------------------
+
+. svy: prop cens_rtor_amp if cat==2
+(running proportion on estimation sample)
+
+Survey: Proportion estimation
+
+Number of strata =     1           Number of obs   =     93,144
+Number of PSUs   = 4,636           Population size = 465,719.91
+                                   Design df       =      4,635
+
+---------------------------------------------------------------
+              |             Linearized            Logit
+              | Proportion   std. err.     [95% conf. interval]
+--------------+------------------------------------------------
+cens_rtor_amp |
+           0  |   .9813729   .0004576      .9804543    .9822492
+           1  |   .0186271   .0004576      .0177508    .0195457
+---------------------------------------------------------------
+
+. svy: prop cens_rtor_amp if cat==1
+(running proportion on estimation sample)
+
+Survey: Proportion estimation
+
+Number of strata =     1           Number of obs   =     84,696
+Number of PSUs   = 4,650           Population size = 423,479.95
+                                   Design df       =      4,649
+
+---------------------------------------------------------------
+              |             Linearized            Logit
+              | Proportion   std. err.     [95% conf. interval]
+--------------+------------------------------------------------
+cens_rtor_amp |
+           0  |    .976457   .0005645      .9753245    .9775387
+           1  |    .023543   .0005645      .0224613    .0246755
+---------------------------------------------------------------
+
+. svy: prop cens_rtor_amp if cat==0
+(running proportion on estimation sample)
+
+Survey: Proportion estimation
+
+Number of strata =     1            Number of obs   = 1,211,547
+Number of PSUs   = 4,913            Population size = 6,057,733
+                                    Design df       =     4,912
+
+---------------------------------------------------------------
+              |             Linearized            Logit
+              | Proportion   std. err.     [95% conf. interval]
+--------------+------------------------------------------------
+cens_rtor_amp |
+           0  |   .9947274   .0000724      .9945835    .9948675
+           1  |   .0052726   .0000724      .0051325    .0054165
+---------------------------------------------------------------
+
+. svy: tab cat cens_rtor_amp
+(running tabulate on estimation sample)
+
+Number of strata =     1                           Number of obs   = 1,877,724
+Number of PSUs   = 4,920                           Population size = 9,388,618
+                                                   Design df       =     4,919
+
+-------------------------------------
+          |       cens_rtor_amp      
+      cat |       0        1    Total
+----------+--------------------------
+        0 |   .6418    .0034    .6452
+        1 |    .044    .0011    .0451
+        2 |   .0487  9.2e-04    .0496
+        3 |   .2586    .0015    .2601
+          | 
+    Total |   .9931    .0069        1
+-------------------------------------
+Key: Cell proportion
+
+  Pearson:
+    Uncorrected   chi2(3)         = 5917.4394
+    Design-based  F(2.98, 14650.70)= 1856.6942    P = 0.0000
+
+. 
+. **cox regression; can survey-weight
+. *Note: CAD is included
+. svy: stcox i.allPAD age i.race i.male i.zipinc_qrtl i.cad i.cm_dm i.esrd i.cvd i.htn i.chronic_at
+(running stcox on estimation sample)
+
+Survey: Cox regression
+
+Number of strata =     1                           Number of obs   = 1,877,671
+Number of PSUs   = 4,920                           Population size = 9,388,353
+                                                   Subpop. no. obs = 1,849,385
+                                                   Subpop. size    = 9,246,923
+                                                   Design df       =     4,919
+                                                   F(18, 4902)     =    946.78
+                                                   Prob > F        =    0.0000
+
+--------------------------------------------------------------------------------------------
+                           |             Linearized
+                        _t | Haz. ratio   std. err.      t    P>|t|     [95% conf. interval]
+---------------------------+----------------------------------------------------------------
+                  1.allPAD |   4.383485    .100184    64.66   0.000     4.191415    4.584357
+                       age |   .9651526   .0006387   -53.60   0.000     .9639013    .9664056
+                           |
+                      race |
+                    Black  |   1.260801   .0315359     9.27   0.000     1.200468    1.324167
+                 Hispanic  |   1.051393   .0325747     1.62   0.106      .989433    1.117234
+Asian or Pacific Islander  |   .5635096   .0407425    -7.93   0.000     .4890385    .6493211
+          Native American  |   1.458331   .1209207     4.55   0.000     1.239537    1.715745
+                    Other  |   .8786404    .055362    -2.05   0.040     .7765419    .9941627
+                           |
+                    1.male |    2.15859   .0469615    35.37   0.000      2.06846    2.252647
+                           |
+               zipinc_qrtl |
+                        2  |   .9283234    .022721    -3.04   0.002     .8848318    .9739527
+                        3  |   .8823887   .0232531    -4.75   0.000     .8379598    .9291733
+                        4  |   .8119569   .0251311    -6.73   0.000     .7641537    .8627505
+                        5  |   .9129436   .0650944    -1.28   0.202     .7938471    1.049907
+                           |
+                     1.cad |   .9459913   .0209736    -2.50   0.012     .9057545    .9880156
+                   1.cm_dm |   6.102878   .1559821    70.77   0.000     5.804618    6.416463
+                    1.esrd |   1.458554   .0303725    18.13   0.000     1.400209    1.519329
+                     1.cvd |   .8177868   .0294704    -5.58   0.000     .7620052    .8776518
+                     1.htn |   1.101652   .0290111     3.68   0.000      1.04622     1.16002
+              1.chronic_at |   .7913647   .0247798    -7.47   0.000     .7442463    .8414661
+--------------------------------------------------------------------------------------------
+
+. 
+. *Three categories
+. svy: stcox i.cat age i.race i.male i.zipinc_qrtl i.cm_dm i.esrd i.cvd i.htn i.chronic_at
+(running stcox on estimation sample)
+
+Survey: Cox regression
+
+Number of strata =     1                           Number of obs   = 1,877,671
+Number of PSUs   = 4,920                           Population size = 9,388,353
+                                                   Subpop. no. obs = 1,849,385
+                                                   Subpop. size    = 9,246,923
+                                                   Design df       =     4,919
+                                                   F(19, 4901)     =    900.71
+                                                   Prob > F        =    0.0000
+
+--------------------------------------------------------------------------------------------
+                           |             Linearized
+                        _t | Haz. ratio   std. err.      t    P>|t|     [95% conf. interval]
+---------------------------+----------------------------------------------------------------
+                       cat |
+                        1  |   4.992332   .1416831    56.66   0.000     4.722155    5.277966
+                        2  |    3.87646   .1204627    43.60   0.000     3.647349    4.119963
+                        3  |   1.050852   .0275395     1.89   0.058     .9982262    1.106253
+                           |
+                       age |   .9649159   .0006403   -53.82   0.000     .9636614     .966172
+                           |
+                      race |
+                    Black  |    1.25815   .0315025     9.17   0.000     1.197882     1.32145
+                 Hispanic  |   1.051796   .0325879     1.63   0.103     .9898103    1.117663
+Asian or Pacific Islander  |   .5629703    .040654    -7.96   0.000     .4886548    .6485877
+          Native American  |   1.461434   .1212707     4.57   0.000      1.24202    1.719609
+                    Other  |   .8796904   .0554369    -2.03   0.042     .7774548    .9953702
+                           |
+                    1.male |   2.159063    .046957    35.39   0.000     2.068941     2.25311
+                           |
+               zipinc_qrtl |
+                        2  |   .9289055   .0227397    -3.01   0.003     .8853784    .9745726
+                        3  |   .8821468   .0232628    -4.76   0.000     .8377002    .9289516
+                        4  |   .8117442   .0251252    -6.74   0.000     .7639522     .862526
+                        5  |    .912768   .0650982    -1.28   0.201     .7936667    1.049742
+                           |
+                   1.cm_dm |   6.090427   .1557383    70.65   0.000     5.792637    6.403526
+                    1.esrd |   1.455381   .0302773    18.04   0.000     1.397219    1.515966
+                     1.cvd |   .8146097   .0293631    -5.69   0.000     .7590318    .8742572
+                     1.htn |   1.098351   .0289274     3.56   0.000     1.043079    1.156551
+              1.chronic_at |   .7921338   .0247776    -7.45   0.000      .745018    .8422292
+--------------------------------------------------------------------------------------------
+
+. 
+. *With antithrombotic subgroup
+. svy: stcox i.cat age i.race i.male i.zipinc_qrtl i.cm_dm i.esrd i.cvd i.htn i.chronic_at i.cat#i.chronic_at
+(running stcox on estimation sample)
+
+Survey: Cox regression
+
+Number of strata =     1                           Number of obs   = 1,877,671
+Number of PSUs   = 4,920                           Population size = 9,388,353
+                                                   Subpop. no. obs = 1,849,385
+                                                   Subpop. size    = 9,246,923
+                                                   Design df       =     4,919
+                                                   F(22, 4898)     =    781.03
+                                                   Prob > F        =    0.0000
+
+--------------------------------------------------------------------------------------------
+                           |             Linearized
+                        _t | Haz. ratio   std. err.      t    P>|t|     [95% conf. interval]
+---------------------------+----------------------------------------------------------------
+                       cat |
+                        1  |   5.117091   .1529201    54.63   0.000     4.825912    5.425839
+                        2  |   3.902866   .1317491    40.34   0.000      3.65294    4.169891
+                        3  |   1.041388   .0289556     1.46   0.145     .9861412    1.099729
+                           |
+                       age |   .9648749   .0006412   -53.80   0.000     .9636186    .9661328
+                           |
+                      race |
+                    Black  |   1.258916   .0315194     9.20   0.000     1.198616     1.32225
+                 Hispanic  |   1.051984   .0325959     1.64   0.102     .9899834    1.117867
+Asian or Pacific Islander  |   .5632628   .0406576    -7.95   0.000     .4889385    .6488853
+          Native American  |   1.460991   .1212564     4.57   0.000     1.241606     1.71914
+                    Other  |   .8805258   .0555113    -2.02   0.044     .7781553    .9963638
+                           |
+                    1.male |   2.159594   .0469507    35.41   0.000     2.069483    2.253627
+                           |
+               zipinc_qrtl |
+                        2  |   .9290454   .0227431    -3.01   0.003     .8855117    .9747193
+                        3  |   .8822219   .0232696    -4.75   0.000     .8377625    .9290407
+                        4  |    .811928    .025135    -6.73   0.000     .7641177    .8627297
+                        5  |   .9127007   .0650995    -1.28   0.200     .7935979    1.049679
+                           |
+                   1.cm_dm |    6.08678    .155678    70.62   0.000     5.789107    6.399759
+                    1.esrd |   1.454973   .0302852    18.02   0.000     1.396796    1.515574
+                     1.cvd |   .8145708   .0293504    -5.69   0.000     .7590162    .8741916
+                     1.htn |   1.098544    .028925     3.57   0.000     1.043276    1.156739
+              1.chronic_at |   .8246001   .0451267    -3.52   0.000     .7407121    .9179887
+                           |
+            cat#chronic_at |
+                      1 1  |   .8014019   .0731611    -2.43   0.015     .6700757    .9584663
+                      2 1  |   .9431706   .0798864    -0.69   0.490     .7988696    1.113537
+                      3 1  |   1.049801   .0838183     0.61   0.543     .8976943     1.22768
+--------------------------------------------------------------------------------------------
+
+. contrast i.cat#i.chronic_at, overall emptycells(reweight)
+
+Contrasts of marginal linear predictions
+
+                                                             Design df = 4,919
+
+Margins:     asbalanced
+Empty cells: reweight
+
+--------------------------------------------------
+               |         df           F        P>F
+---------------+----------------------------------
+cat#chronic_at |          3        2.93     0.0322
+        Design |       4919
+--------------------------------------------------
+Note: F statistics are adjusted for the survey
+      design.
+
+.         *PAD w/antithrombotics
+.         lincom  1.cat + 1.cat#1.chronic_at , hr
+
+ ( 1)  1.cat + 1.cat#1.chronic_at = 0
+
+------------------------------------------------------------------------------
+          _t | Haz. ratio   Std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         (1) |   4.100847   .3544593    16.33   0.000     3.461635    4.858093
+------------------------------------------------------------------------------
+
+.         *PAD+CAD w/antithrombotics
+.         lincom  2.cat + 2.cat#1.chronic_at, hr
+
+ ( 1)  2.cat + 2.cat#1.chronic_at = 0
+
+------------------------------------------------------------------------------
+          _t | Haz. ratio   Std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         (1) |   3.681068   .2885582    16.62   0.000      3.15669    4.292555
+------------------------------------------------------------------------------
+
+.         *CAD w/antithrombotics
+.         lincom  3.cat + 3.cat#1.chronic_at, hr
+
+ ( 1)  3.cat + 3.cat#1.chronic_at = 0
+
+------------------------------------------------------------------------------
+          _t | Haz. ratio   Std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         (1) |    1.09325   .0825423     1.18   0.238     .9428363    1.267659
+------------------------------------------------------------------------------
+
+. 
+. ****FINE GRAY
+. **censoring variable for cox
+. gen cens_rtor_amp_fg=0
+
+. foreach num of numlist 1/25{
+  2. replace cens_rtor_amp_fg=1 if rtor_amp`num'!=""
+  3. }
+(9,773 real changes made)
+(1,486 real changes made)
+(634 real changes made)
+(370 real changes made)
+(211 real changes made)
+(119 real changes made)
+(76 real changes made)
+(44 real changes made)
+(34 real changes made)
+(26 real changes made)
+(20 real changes made)
+(15 real changes made)
+(13 real changes made)
+(9 real changes made)
+(5 real changes made)
+(8 real changes made)
+(5 real changes made)
+(4 real changes made)
+(2 real changes made)
+(2 real changes made)
+(1 real change made)
+(1 real change made)
+(2 real changes made)
+(1 real change made)
+(4 real changes made)
+
+. replace cens_rtor_amp_fg=2 if died==1
+(209,279 real changes made)
+
+. 
+. **tell stata this is time to event data
+. stset event_day, failure(cens_rtor_amp_fg==1)
+
+Survival-time data settings
+
+         Failure event: cens_rtor_amp_fg==1
+Observed time interval: (0, event_day]
+     Exit on or before: failure
+
+--------------------------------------------------------------------------
+  1,877,724  total observations
+         53  event time missing (event_day>=.)              PROBABLE ERROR
+     28,286  observations end on or before enter()
+--------------------------------------------------------------------------
+  1,849,385  observations remaining, representing
+     10,330  failures in single-record/single-failure data
+   14477401  total analysis time at risk and under observation
+                                                At risk from t =         0
+                                     Earliest observed entry t =         0
+                                          Last observed exit t =       365
+
+. 
+. stcrreg i.allPAD age i.race i.male i.zipinc_qrtl i.cm_dm i.esrd i.cvd i.htn i.chronic_at, compete(cens_rtor_amp_fg==2) shr
+>  nolog
+
+        Failure _d: cens_rtor_amp_fg==1
+  Analysis time _t: event_day
+
+Competing-risks regression                        No. of obs      =  1,849,385
+                                                  No. of subjects =  1,849,385
+Failure event:   cens_rto~g == 1                  No. failed      =     10,330
+Competing event: cens_rto~g == 2                  No. competing   =    193,343
+                                                  No. censored    =  1,645,712
+
+                                                  Wald chi2(17)   =   16882.45
+Log pseudolikelihood = -133821.56                 Prob > chi2     =     0.0000
+
+--------------------------------------------------------------------------------------------
+                           |               Robust
+                        _t |        SHR   std. err.      z    P>|z|     [95% conf. interval]
+---------------------------+----------------------------------------------------------------
+                  1.allPAD |   4.194992   .0943968    63.72   0.000     4.013998    4.384147
+                       age |   .9616856   .0006072   -61.88   0.000     .9604963    .9628764
+                           |
+                      race |
+                    Black  |   1.265184   .0319492     9.31   0.000     1.204089    1.329378
+                 Hispanic  |   1.033703   .0315444     1.09   0.277     .9736901    1.097416
+Asian or Pacific Islander  |   .5727576    .044028    -7.25   0.000     .4926504    .6658906
+          Native American  |   1.498323   .1244991     4.87   0.000     1.273143     1.76333
+                    Other  |   .8538583   .0550742    -2.45   0.014     .7524592    .9689216
+                           |
+                    1.male |   2.193636   .0487366    35.36   0.000     2.100164    2.291268
+                           |
+               zipinc_qrtl |
+                        2  |   .9346603   .0236838    -2.67   0.008     .8893747    .9822517
+                        3  |   .8953261   .0244699    -4.05   0.000     .8486279    .9445941
+                        4  |   .8153456   .0261315    -6.37   0.000     .7657043    .8682052
+                        5  |   .9084629   .0665954    -1.31   0.190     .7868815     1.04883
+                           |
+                   1.cm_dm |   6.543378   .1748829    70.28   0.000     6.209437    6.895279
+                    1.esrd |   1.436729   .0309626    16.81   0.000     1.377308    1.498715
+                     1.cvd |   .8020198   .0301638    -5.87   0.000     .7450262    .8633733
+                     1.htn |   1.129212   .0310159     4.42   0.000      1.07003    1.191668
+              1.chronic_at |   .8113551   .0260124    -6.52   0.000     .7619406    .8639743
+--------------------------------------------------------------------------------------------
+
+. 
+. **Redo for mortality**
+. *set time to event data for mortality
+. replace event_day=los
+(12,313 real changes made, 1 to missing)
+
+. stset event_day, failure(died==1)
+
+Survival-time data settings
+
+         Failure event: died==1
+Observed time interval: (0, event_day]
+     Exit on or before: failure
+
+--------------------------------------------------------------------------
+  1,877,724  total observations
+         54  event time missing (event_day>=.)              PROBABLE ERROR
+     26,609  observations end on or before enter()
+--------------------------------------------------------------------------
+  1,851,061  observations remaining, representing
+    193,483  failures in single-record/single-failure data
+   14618487  total analysis time at risk and under observation
+                                                At risk from t =         0
+                                     Earliest observed entry t =         0
+                                          Last observed exit t =       365
+
+. 
+. **cox regression; can survey-weight
+. svy: stcox i.allPAD age i.race i.male i.zipinc_qrtl i.cad i.cm_dm i.esrd i.cvd i.htn i.chronic_at
+(running stcox on estimation sample)
+
+Survey: Cox regression
+
+Number of strata =     1                           Number of obs   = 1,877,670
+Number of PSUs   = 4,920                           Population size = 9,388,348
+                                                   Subpop. no. obs = 1,851,061
+                                                   Subpop. size    = 9,255,303
+                                                   Design df       =     4,919
+                                                   F(18, 4902)     =   1087.95
+                                                   Prob > F        =    0.0000
+
+--------------------------------------------------------------------------------------------
+                           |             Linearized
+                        _t | Haz. ratio   std. err.      t    P>|t|     [95% conf. interval]
+---------------------------+----------------------------------------------------------------
+                  1.allPAD |   1.145813    .008652    18.03   0.000     1.128976    1.162901
+                       age |   1.021577   .0001918   113.73   0.000     1.021202    1.021953
+                           |
+                      race |
+                    Black  |   1.006369   .0081065     0.79   0.431      .990601    1.022387
+                 Hispanic  |   1.100675   .0114681     9.21   0.000     1.078421    1.123389
+Asian or Pacific Islander  |   1.186562    .017492    11.60   0.000     1.152761    1.221355
+          Native American  |   1.253567   .0355552     7.97   0.000     1.185766    1.325245
+                    Other  |   1.130435   .0181144     7.65   0.000     1.095475    1.166511
+                           |
+                    1.male |   1.004141   .0046901     0.88   0.376     .9949883    1.013378
+                           |
+               zipinc_qrtl |
+                        2  |   .9690557   .0068902    -4.42   0.000     .9556415    .9826581
+                        3  |   .9380233   .0072508    -8.28   0.000     .9239156    .9523465
+                        4  |   .9311091   .0079498    -8.36   0.000     .9156536    .9468256
+                        5  |   .9201279   .0171139    -4.48   0.000     .8871813     .954298
+                           |
+                     1.cad |   1.229353   .0064097    39.60   0.000     1.216851    1.241983
+                   1.cm_dm |   .8613955    .004417   -29.10   0.000     .8527795    .8700985
+                    1.esrd |   .9765614   .0050847    -4.56   0.000     .9666439    .9865806
+                     1.cvd |   1.036132   .0083146     4.42   0.000      1.01996    1.052562
+                     1.htn |   .7384243   .0040915   -54.73   0.000     .7304464    .7464892
+              1.chronic_at |   .8213871    .006469   -24.98   0.000     .8088024    .8341677
+--------------------------------------------------------------------------------------------
+
+. 
+. *Three categories
+. svy: stcox i.cat age i.race i.male i.zipinc_qrtl i.cm_dm i.esrd i.cvd i.htn i.chronic_at
+(running stcox on estimation sample)
+
+Survey: Cox regression
+
+Number of strata =     1                           Number of obs   = 1,877,670
+Number of PSUs   = 4,920                           Population size = 9,388,348
+                                                   Subpop. no. obs = 1,851,061
+                                                   Subpop. size    = 9,255,303
+                                                   Design df       =     4,919
+                                                   F(19, 4901)     =   1031.57
+                                                   Prob > F        =    0.0000
+
+--------------------------------------------------------------------------------------------
+                           |             Linearized
+                        _t | Haz. ratio   std. err.      t    P>|t|     [95% conf. interval]
+---------------------------+----------------------------------------------------------------
+                       cat |
+                        1  |   1.235368   .0128879    20.26   0.000     1.210358    1.260894
+                        2  |   1.338589   .0134806    28.96   0.000      1.31242    1.365279
+                        3  |    1.25277   .0069006    40.91   0.000     1.239314    1.266371
+                           |
+                       age |   1.021512   .0001918   113.37   0.000     1.021136    1.021888
+                           |
+                      race |
+                    Black  |   1.006086   .0081012     0.75   0.451     .9903283    1.022093
+                 Hispanic  |   1.100825    .011459     9.23   0.000     1.078588     1.12352
+Asian or Pacific Islander  |   1.186152   .0174864    11.58   0.000     1.152361    1.220933
+          Native American  |   1.253814   .0355506     7.98   0.000      1.18602    1.325482
+                    Other  |   1.130769   .0181309     7.66   0.000     1.095777    1.166878
+                           |
+                    1.male |   1.004469   .0046917     0.95   0.340      .995313    1.013709
+                           |
+               zipinc_qrtl |
+                        2  |    .969032    .006889    -4.42   0.000     .9556202     .982632
+                        3  |   .9379121   .0072482    -8.29   0.000     .9238094    .9522301
+                        4  |   .9307935    .007948    -8.40   0.000     .9153417    .9465062
+                        5  |   .9200616   .0171151    -4.48   0.000     .8871128    .9542341
+                           |
+                   1.cm_dm |   .8608912   .0044153   -29.21   0.000     .8522785    .8695909
+                    1.esrd |   .9766362   .0050856    -4.54   0.000     .9667169    .9866573
+                     1.cvd |   1.035513   .0083112     4.35   0.000     1.019347    1.051936
+                     1.htn |    .738165   .0040894   -54.80   0.000     .7301914    .7462258
+              1.chronic_at |   .8217688   .0064697   -24.93   0.000     .8091827    .8345508
+--------------------------------------------------------------------------------------------
+
+. 
+. *With antithrombotic subgroup
+. svy: stcox i.cat age i.race i.male i.zipinc_qrtl i.cm_dm i.esrd i.cvd i.htn i.chronic_at i.cat#i.chronic_at
+(running stcox on estimation sample)
+
+Survey: Cox regression
+
+Number of strata =     1                           Number of obs   = 1,877,670
+Number of PSUs   = 4,920                           Population size = 9,388,348
+                                                   Subpop. no. obs = 1,851,061
+                                                   Subpop. size    = 9,255,303
+                                                   Design df       =     4,919
+                                                   F(22, 4898)     =    895.81
+                                                   Prob > F        =    0.0000
+
+--------------------------------------------------------------------------------------------
+                           |             Linearized
+                        _t | Haz. ratio   std. err.      t    P>|t|     [95% conf. interval]
+---------------------------+----------------------------------------------------------------
+                       cat |
+                        1  |   1.248456   .0138155    20.05   0.000     1.221663    1.275836
+                        2  |   1.355443   .0149204    27.63   0.000     1.326506    1.385011
+                        3  |   1.264045     .00741    39.97   0.000     1.249601    1.278656
+                           |
+                       age |   1.021471   .0001921   112.99   0.000     1.021095    1.021848
+                           |
+                      race |
+                    Black  |   1.006164   .0081014     0.76   0.445     .9904063    1.022172
+                 Hispanic  |   1.101118   .0114611     9.25   0.000     1.078877    1.123818
+Asian or Pacific Islander  |   1.186244   .0174836    11.59   0.000     1.152459     1.22102
+          Native American  |    1.25439   .0355757     7.99   0.000      1.18655     1.32611
+                    Other  |   1.130845   .0181414     7.67   0.000     1.095833    1.166975
+                           |
+                    1.male |   1.004701   .0046927     1.00   0.315     .9955435    1.013943
+                           |
+               zipinc_qrtl |
+                        2  |    .968951   .0068891    -4.44   0.000     .9555389    .9825513
+                        3  |   .9378347   .0072478    -8.30   0.000     .9237328    .9521519
+                        4  |    .930577   .0079453    -8.43   0.000     .9151302    .9462845
+                        5  |   .9200666    .017115    -4.48   0.000     .8871179     .954239
+                           |
+                   1.cm_dm |   .8607514    .004414   -29.24   0.000     .8521413    .8694485
+                    1.esrd |    .976542   .0050843    -4.56   0.000     .9666251    .9865606
+                     1.cvd |    1.03488   .0083009     4.27   0.000     1.018734    1.051282
+                     1.htn |   .7379184   .0040857   -54.89   0.000     .7299519    .7459717
+              1.chronic_at |   .8617596   .0095364   -13.44   0.000     .8432653    .8806595
+                           |
+            cat#chronic_at |
+                      1 1  |   .9075914   .0278261    -3.16   0.002     .8546469    .9638158
+                      2 1  |    .913745   .0229902    -3.59   0.000     .8697674    .9599463
+                      3 1  |   .9202797   .0150007    -5.10   0.000     .8913366    .9501626
+--------------------------------------------------------------------------------------------
+
+. contrast i.cat#i.chronic_at, overall emptycells(reweight)
+
+Contrasts of marginal linear predictions
+
+                                                             Design df = 4,919
+
+Margins:     asbalanced
+Empty cells: reweight
+
+--------------------------------------------------
+               |         df           F        P>F
+---------------+----------------------------------
+cat#chronic_at |          3       11.28     0.0000
+        Design |       4919
+--------------------------------------------------
+Note: F statistics are adjusted for the survey
+      design.
+
+.         *PAD w/antithrombotics
+.         lincom  1.cat + 1.cat#1.chronic_at , hr
+
+ ( 1)  1.cat + 1.cat#1.chronic_at = 0
+
+------------------------------------------------------------------------------
+          _t | Haz. ratio   Std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         (1) |   1.133088   .0327972     4.32   0.000     1.070581    1.199244
+------------------------------------------------------------------------------
+
+.         *PAD+CAD w/antithrombotics
+.         lincom  2.cat + 2.cat#1.chronic_at, hr
+
+ ( 1)  2.cat + 2.cat#1.chronic_at = 0
+
+------------------------------------------------------------------------------
+          _t | Haz. ratio   Std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         (1) |   1.238529   .0285952     9.27   0.000      1.18372    1.295877
+------------------------------------------------------------------------------
+
+.         *PAD+CAD w/antithrombotics
+.         lincom  3.cat + 3.cat#1.chronic_at, hr
+
+ ( 1)  3.cat + 3.cat#1.chronic_at = 0
+
+------------------------------------------------------------------------------
+          _t | Haz. ratio   Std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         (1) |   1.163275   .0177972     9.89   0.000     1.128903    1.198694
+------------------------------------------------------------------------------
+
+. 
+. *For hospice
+. stset event_day, failure(hospice==1)
+
+Survival-time data settings
+
+         Failure event: hospice==1
+Observed time interval: (0, event_day]
+     Exit on or before: failure
+
+--------------------------------------------------------------------------
+  1,877,724  total observations
+         54  event time missing (event_day>=.)              PROBABLE ERROR
+     26,609  observations end on or before enter()
+--------------------------------------------------------------------------
+  1,851,061  observations remaining, representing
+    299,281  failures in single-record/single-failure data
+   14618487  total analysis time at risk and under observation
+                                                At risk from t =         0
+                                     Earliest observed entry t =         0
+                                          Last observed exit t =       365
+
+. svy: stcox i.allPAD age i.race i.male i.zipinc_qrtl i.cm_dm i.esrd i.cvd i.htn i.chronic_at
+(running stcox on estimation sample)
+
+Survey: Cox regression
+
+Number of strata =     1                           Number of obs   = 1,877,670
+Number of PSUs   = 4,920                           Population size = 9,388,348
+                                                   Subpop. no. obs = 1,851,061
+                                                   Subpop. size    = 9,255,303
+                                                   Design df       =     4,919
+                                                   F(17, 4903)     =   2129.12
+                                                   Prob > F        =    0.0000
+
+--------------------------------------------------------------------------------------------
+                           |             Linearized
+                        _t | Haz. ratio   std. err.      t    P>|t|     [95% conf. interval]
+---------------------------+----------------------------------------------------------------
+                  1.allPAD |    1.09477   .0067962    14.59   0.000     1.081528    1.108176
+                       age |   1.029863   .0001704   177.90   0.000     1.029529    1.030197
+                           |
+                      race |
+                    Black  |   .9730333   .0066171    -4.02   0.000     .9601469    .9860927
+                 Hispanic  |   1.022743   .0087076     2.64   0.008     1.005814    1.039957
+Asian or Pacific Islander  |   1.057676   .0141341     4.20   0.000     1.030327    1.085752
+          Native American  |   1.127194   .0280096     4.82   0.000     1.073599    1.183465
+                    Other  |   1.001658   .0137091     0.12   0.904     .9751397    1.028898
+                           |
+                    1.male |   .9875368   .0037103    -3.34   0.001     .9802897    .9948376
+                           |
+               zipinc_qrtl |
+                        2  |   1.007993   .0059055     1.36   0.174      .996482    1.019637
+                        3  |   .9924294   .0062993    -1.20   0.231     .9801566    1.004856
+                        4  |   .9902709   .0074369    -1.30   0.193     .9757981    1.004958
+                        5  |    .918157   .0142485    -5.50   0.000     .8906441    .9465197
+                           |
+                   1.cm_dm |   .8475558   .0034644   -40.46   0.000     .8407912    .8543748
+                    1.esrd |    .965774   .0040186    -8.37   0.000     .9579279    .9736844
+                     1.cvd |   1.066777   .0068318    10.09   0.000     1.053467    1.080255
+                     1.htn |   .7796794   .0035485   -54.68   0.000     .7727537    .7866672
+              1.chronic_at |   .8826907     .00546   -20.17   0.000     .8720512      .89346
+--------------------------------------------------------------------------------------------
+
+. 
+. ssc install evalue
+checking evalue consistency and verifying not already installed...
+all files already exist and are up to date.
+
+. *specify point estimate when ucl < 1 or lcl > 1
+. evalue hr 1.18, lcl(1.17) ucl(1.20) true(1)
+   E-value (point estimate): 1.641
+   E-value (CI): 1.616
+
+. 
+. log close
+      name:  <unnamed>
+       log:  /Users/stuthiiyer/Documents/Stuthi/Year 2 Pitt MPH/Work-Related/CLI:Sepsis /Cox Regression.log
+  log type:  text
+ closed on:   3 Dec 2024, 12:43:35
+----------------------------------------------------------------------------------------------------------------------------
