@@ -1,8 +1,8 @@
 # PAD-Sepsis
-Prevalence of Peripheral Artery Disease Among Adults with Sepsis
+**Peripheral arterial disease prevalence among sepsis hospitalizations and associated outcomes**
 
-Research Plan, two Stata do files, and four Stata log files included. 
+Research Plan, two Stata do files, and six Stata log files included. 
 
 One do file defines the variables of interest in this epidemiological study. The second completes our main and sensitivity analyses.
 
-One log file defines the cohort, the second includes our data for differences in variable among sepsis hospitalizations with and without PAD (Tables 1, 2, and 3), the third consists of our main and sensitivity analyses (except the one for explicit septic shock), the fourth only our sensitivity analysis for explicit septic shock
+Five log files, for each NIS year included, identify sepsis hospitalizations. The "Table 1" log file defines the cohort and the "Cox Regression" log file consists of our main and sensitivity analyses.
